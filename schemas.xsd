@@ -1,0 +1,1043 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://epgu.gosuslugi.ru/elk/status/1.0.2" targetNamespace="http://epgu.gosuslugi.ru/elk/status/1.0.2" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:simpleType name="digits-4">
+		<xsd:annotation>
+			<xsd:documentation>Строка, состоящая из четырёх цифр</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:length value="4"/>
+			<xsd:pattern value="\d{4}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="stringNN-36">
+		<xsd:restriction base="xsd:normalizedString">
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="36"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="digits-6">
+		<xsd:annotation>
+			<xsd:documentation>Строка, состоящая из шести цифр</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:length value="6"/>
+			<xsd:pattern value="\d{6}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="string-14">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="14"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="string-25">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="16"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="string-20">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="string-50">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="string-6">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="6"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="string-256">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="256"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="string-4000">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="4000"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="string-1024">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1024"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="stringNN-20">
+		<xsd:restriction base="xsd:normalizedString">
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ErnIdType">
+		<xsd:annotation>
+			<xsd:documentation>Формат номера записи единого федерального информационного регистра, содержащего сведения о населении Российской Федерации</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:length value="12"/>
+			<xsd:pattern value="\d{12}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ogrnULType">
+		<xsd:annotation>
+			<xsd:documentation>Формат ОГРН для ЮЛ</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[125]{1}\d{12}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ogrnIPType">
+		<xsd:annotation>
+			<xsd:documentation>Формат ОГРН для ИП</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[3]{1}\d{14}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="kppULType">
+		<xsd:annotation>
+			<xsd:documentation>Формат КПП ЮЛ</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="\d{9}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="innULType">
+		<xsd:annotation>
+			<xsd:documentation>Формат ИНН ЮЛ</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="\d{10}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="innIPType">
+		<xsd:annotation>
+			<xsd:documentation>Формат ИНН ИП (физического лица)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="\d{12}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="EnvType">
+		<xsd:annotation>
+			<xsd:documentation>Код маршрутизации (в продуктивной версии указывать EPGU, в тестовой - SVCDEV)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="OKTMOType">
+		<xsd:annotation>
+			<xsd:documentation>Код ОКТМО</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="8"/>
+			<xsd:pattern value="\d{1,8}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="userType">
+		<xsd:annotation>
+			<xsd:documentation>
+         Выбор передаваемых данных заявителя
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="userPersonalDoc" type="tns:userTypePersonalDoc">
+				<xsd:annotation>
+					<xsd:documentation>
+							Данные заявителя с обязательным указанием типа документа удостоверяющего личность
+						</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="userDocSnils" type="tns:userTypeDocSnils">
+				<xsd:annotation>
+					<xsd:documentation>
+							Данные заявителя с обязательным указанием СНИЛС
+						</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="userDocSnilsBirthDate" type="tns:userTypeDocSnilsBirthDate">
+				<xsd:annotation>
+					<xsd:documentation>
+							Данные заявителя с обязательным указанием СНИЛС и даты рождения 
+						</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="userDocInn" type="tns:userTypeDocInn">
+				<xsd:annotation>
+					<xsd:documentation>
+							Данные заявителя с обязательным указанием ИНН
+						</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="EsiaId" type="tns:string-50">
+				<xsd:annotation>
+					<xsd:documentation>
+							Данные заявителя с обязательным указанием идентификатора заявителя в ЕСИА (ФЛ)
+						</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ErnId" type="tns:ErnIdType">
+				<xsd:annotation>
+					<xsd:documentation>
+							Данные заявителя с обязательным указанием номера записи единого федерального информационного регистра, содержащего сведения о населении Российской Федерации
+						</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="userTypeDocSnilsBirthDate">
+		<xsd:annotation>
+			<xsd:documentation>Данные заявителя с обязательным указанием СНИЛС и даты рождения 
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="citizenship" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>
+						Гражданство (Заполняется из ЕСНСИ-справочника ЕЛК.Гражданство)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="snils" type="tns:string-14">
+				<xsd:annotation>
+					<xsd:documentation>
+						СНИЛС
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="birthDate" type="xsd:date">
+				<xsd:annotation>
+					<xsd:documentation>
+						Дата рождения
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="userTypeDocSnils">
+		<xsd:annotation>
+			<xsd:documentation>Данные заявителя с обязательным указанием СНИЛС
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="snils" type="tns:string-14">
+				<xsd:annotation>
+					<xsd:documentation>
+						СНИЛС
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="lastName" type="tns:string-256">
+				<xsd:annotation>
+					<xsd:documentation>
+						Фамилия
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="firstName" type="tns:string-256">
+				<xsd:annotation>
+					<xsd:documentation>
+						Имя
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="middleName" type="tns:string-256" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Отчество
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="citizenship" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>
+						Гражданство (Заполняется из ЕСНСИ-справочника ЕЛК.Гражданство)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="userTypeDocInn">
+		<xsd:annotation>
+			<xsd:documentation>Данные заявителя с обязательным указанием ИНН
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="INN" type="tns:string-14">
+				<xsd:annotation>
+					<xsd:documentation>
+						ИНН
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="lastName" type="tns:string-256">
+				<xsd:annotation>
+					<xsd:documentation>
+						Фамилия
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="firstName" type="tns:string-256">
+				<xsd:annotation>
+					<xsd:documentation>
+						Имя
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="middleName" type="tns:string-256" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Отчество
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="citizenship" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>
+						Гражданство (Заполняется из ЕСНСИ-справочника ЕЛК.Гражданство)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="userTypePersonalDoc">
+		<xsd:annotation>
+			<xsd:documentation>Данные заявителя с типом документа удостоверяющего личность 
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="PersonalDocType" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>Тип документа удостоверяющего личность (Заполняется из ЕСНСИ-справочника ЕЛК.Тип документа удостоверяющего личность) </xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="series" type="tns:string-25" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Серия</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="number" type="tns:string-25">
+				<xsd:annotation>
+					<xsd:documentation>Номер</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="lastName" type="tns:string-256">
+				<xsd:annotation>
+					<xsd:documentation>
+						Фамилия
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="firstName" type="tns:string-256">
+				<xsd:annotation>
+					<xsd:documentation>
+						Имя
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="middleName" type="tns:string-256" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Отчество
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="citizenship" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>
+						Гражданство (Заполняется из ЕСНСИ-справочника ЕЛК.Гражданство)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="OfficeInfoType">
+		<xsd:annotation>
+			<xsd:documentation>Информация о канале приема заявления
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="OfficeName" type="tns:string-1024" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Наименование офиса</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="OfficeAdress" type="tns:string-4000" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Адрес офиса или сайта, через который был подано заявление</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="OfficeFrguCode" type="tns:string-1024" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>ФРГУ код офиса</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ApplicationAcceptance" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>Канал приема заявления (Заполняется из ЕСНСИ-справочника ЕЛК.Канал приема заявления)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="inn_kpp_ULType">
+		<xsd:annotation>
+			<xsd:documentation>Пара ИНН КПП ЮЛ</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="inn" type="tns:innULType">
+				<xsd:annotation>
+					<xsd:documentation>ИНН</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="kpp" type="tns:kppULType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>КПП</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="ogrn_inn_kpp_ULType">
+		<xsd:annotation>
+			<xsd:documentation>Данные, идентифицирующие заявителя - юридическое лицо</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+		<xsd:choice>
+			<xsd:element name="ogrn" type="tns:ogrnULType">
+				<xsd:annotation>
+					<xsd:documentation>ОГРН</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="inn_kpp" type="tns:inn_kpp_ULType">
+				<xsd:annotation>
+					<xsd:documentation>ИНН КПП</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			</xsd:choice>
+			<xsd:element name="UlTitle" type="tns:string-1024" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Наименование юредического лица</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="ogrn_inn_IPType">
+		<xsd:annotation>
+			<xsd:documentation>Данные, идентифицирующие заявителя - индивидуального предпринимателя</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ogrn" type="tns:ogrnIPType">
+				<xsd:annotation>
+					<xsd:documentation>ОГРН ИП</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="inn" type="tns:innIPType">
+				<xsd:annotation>
+					<xsd:documentation>ИНН</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="lastName" type="tns:string-256" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Фамилия
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="firstName" type="tns:string-256" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Имя
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="middleName" type="tns:string-256" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Отчество
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="orgType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Данные заявителя (ЮЛ / ИП)
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:element name="ogrn_inn_UL" type="tns:ogrn_inn_kpp_ULType">
+					<xsd:annotation>
+						<xsd:documentation>
+							Данные, идентифицирующие заявителя - юридическое лицо
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="ogrn_inn_IP" type="tns:ogrn_inn_IPType">
+					<xsd:annotation>
+						<xsd:documentation>
+							Данные, идентифицирующие заявителя - индивидуального предпринимателя
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="attachmentType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Ссылка на передаваемый файл
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:element name="FSuuid" type="tns:string-256">
+					<xsd:annotation>
+						<xsd:documentation>
+						Идентификатор вложения, передаваемого через файловое хранилище
+					</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="datamartUuid" type="tns:string-256">
+					<xsd:annotation>
+						<xsd:documentation>
+						Идентификатор документа, передаваемого через витрину
+					</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="docTypeId" type="tns:string-50">
+				<xsd:annotation>
+					<xsd:documentation>
+						Код типа документа, передаваемого через файловое хранилище (Заполняется из ЕСНСИ-справочника ЕЛК.Типы документов (вложений))
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="attachmentsType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Ссылки на передаваемые файлы
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="attachment" type="tns:attachmentType" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						Ссылка на передаваемый файл
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="statusHistoryType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Статус по заявлению
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="status" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>
+						Код статуса ЕЛК.(Заполняется из ЕСНСИ-справочника ЕЛК.Статусы заявлений)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="IsInformed" type="xsd:boolean" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Уже проинформирован
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+
+			<xsd:element name="statusDate" type="xsd:dateTime">
+				<xsd:annotation>
+					<xsd:documentation>
+						Дата и время статуса
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="MessageType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Мнемоника шаблона коментария к статусу оказания услуги (Заполняется из ЕСНСИ-справочника ЕЛК.Шаблоны уведомлений)</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="Param" type="tns:ParamsType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Параметры атрибуты сообщения для  шаблона коментария к статусу оказания услуги</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+            <xsd:element name="attachments" type="tns:attachmentsType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Ссылки на передаваемые файлы
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ParamsType">
+		<xsd:annotation>
+			<xsd:documentation>массив реквизитов результатов предоставления услуги и иных атрибутов, передаваемых вместе со статусом предоставления услуги</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Name">
+				<xsd:annotation>
+					<xsd:documentation>Имя атрибута</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="Value" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Значение атрибута</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="statusHistoryListType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Заявления
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="statusHistory" type="tns:statusHistoryType" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						Статус по заявлению
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CreateOrderType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Заявление
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:element name="user" type="tns:userType">
+					<xsd:annotation>
+						<xsd:documentation>
+							Данные заявителя (ФЛ)
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="orgId" type="tns:stringNN-20">
+					<xsd:annotation>
+						<xsd:documentation>
+							Идентификатор организации в ЕСИА (ЮЛ / ИП)
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="organization" type="tns:orgType">
+					<xsd:annotation>
+						<xsd:documentation>
+							Данные заявителя (ЮЛ / ИП)
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="senderKpp" type="tns:kppULType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						КПП организации, предоставляющей услугу
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="senderInn" type="tns:innULType">
+				<xsd:annotation>
+					<xsd:documentation>
+						ИНН организации, предоставляющей услугу
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="serviceTargetCode" type="tns:stringNN-20">
+				<xsd:annotation>
+					<xsd:documentation>
+						Идентификатор цели обращения (подуслуги) в ФРГУ/КЦР
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="userSelectedRegion" type="tns:OKTMOType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Местоположение заявителя по ОКТМО (Допустимо указание до уровня региона. В случае подачи заявления в электронном виде указывать 00000000)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="orderNumber" type="tns:stringNN-36">
+				<xsd:annotation>
+					<xsd:documentation>
+						Номер заявления пользователя во внешней ИС
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="requestDate" type="xsd:dateTime">
+				<xsd:annotation>
+					<xsd:documentation>
+						Дата и время подачи заявления
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="OfficeInfo" type="tns:OfficeInfoType">
+				<xsd:annotation>
+					<xsd:documentation>
+							Информация о канале приема заявления
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="statusHistoryList" type="tns:statusHistoryListType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Массив истории статусов по заявлению
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CreateOrdersType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Заявления
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="order" type="tns:CreateOrderType" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						Заявление
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CreateOrdersRequestType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Запрос создания заявлений
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="orders" type="tns:CreateOrdersType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Заявления
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="UpdateOrderType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Заявление
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:element name="orderNumber" type="tns:stringNN-36">
+					<xsd:annotation>
+						<xsd:documentation>
+						Номер заявления пользователя во внешней ИС
+					</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="elkOrderNumber" type="xsd:long">
+					<xsd:annotation>
+						<xsd:documentation>
+						Номер заявления в ЛК ЕПГУ
+					</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="senderKpp" type="tns:kppULType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						КПП организации отправителя
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="senderInn" type="tns:innULType">
+				<xsd:annotation>
+					<xsd:documentation>
+						ИНН организации отправителя
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="statusHistoryList" type="tns:statusHistoryListType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Массив истории статусов по заявлению
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="UpdateOrdersType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Заявления
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="order" type="tns:UpdateOrderType" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						Заявление
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="UpdateOrdersRequestType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Запрос изменения заявлений
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="orders" type="tns:UpdateOrdersType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Заявления
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ElkOrderRequestType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Запрос
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="CreateOrdersRequest" type="tns:CreateOrdersRequestType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Запрос создания заявлений
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="UpdateOrdersRequest" type="tns:UpdateOrdersRequestType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Запрос изменения заявлений
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+		<xsd:attribute name="env" type="tns:EnvType" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="CreateOrdersResponseOrderType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Заявление
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="elkOrderNumber" type="xsd:long" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Номер заявления в ЛК ЕПГУ
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="orderNumber" type="tns:stringNN-36">
+				<xsd:annotation>
+					<xsd:documentation>
+						Номер заявления пользователя во внешней ИС
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="status" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>
+						Код результата
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="message" type="tns:string-256">
+				<xsd:annotation>
+					<xsd:documentation>
+						Описание результата
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CreateOrdersResponseOrdersType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Заявления
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="order" type="tns:CreateOrdersResponseOrderType" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						Заявление
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CreateOrdersResponseType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Ответ на создание заявлений
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="code" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>
+						Код результата
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="message" type="tns:string-256">
+				<xsd:annotation>
+					<xsd:documentation>
+						Описание результата
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="orders" type="tns:CreateOrdersResponseOrdersType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Заявления
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="UpdateOrdersResponseOrderType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Заявление
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="elkOrderNumber" type="xsd:long">
+				<xsd:annotation>
+					<xsd:documentation>
+						Номер заявления в ЛК ЕПГУ
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="orderNumber" type="tns:stringNN-36" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Номер заявления пользователя во внешней ИС
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="status" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>
+						Код результата
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="message" type="tns:string-256">
+				<xsd:annotation>
+					<xsd:documentation>
+						Описание результата
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="UpdateOrdersResponseOrdersType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Заявления
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="order" type="tns:UpdateOrdersResponseOrderType" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						Заявление
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="UpdateOrdersResponseType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Ответ на изменение заявлений
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="code" type="xsd:short">
+				<xsd:annotation>
+					<xsd:documentation>
+						Код результата
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="message" type="tns:string-256">
+				<xsd:annotation>
+					<xsd:documentation>
+						Описание результата
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="orders" type="tns:UpdateOrdersResponseOrdersType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Заявления
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ElkOrderResponseType">
+		<xsd:annotation>
+			<xsd:documentation>
+                Ответ
+            </xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="CreateOrdersResponse" type="tns:CreateOrdersResponseType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Ответ на создание заявлений
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="UpdateOrdersResponse" type="tns:UpdateOrdersResponseType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Ответ на изменение заявлений
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:element name="ElkOrderRequest" type="tns:ElkOrderRequestType"/>
+	<xsd:element name="ElkOrderResponse" type="tns:ElkOrderResponseType"/>
+</xsd:schema>
