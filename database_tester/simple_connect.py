@@ -9,18 +9,32 @@ try:
         user="gegorov",
         password="87zerkaLo22"
     )
-
+    
     cur = conn.cursor()
+
     cur.execute("""
-        SELECT table_name
-        FROM information_schema.tables
+        SELECT table_name 
+        FROM information_schema.tables 
     """)
-
     tables = cur.fetchall()
-    print(tables)
+    print(tables, "\n\n\n")
 
+    cur.execute("""
+        SELECT column_name, data_type FROM information_schema.columns
+         WHERE table_name = 'fips_rutrademark'
+    """)
+    tables = cur.fetchall()
+    print(tables, "\n\n\n")
+
+    cur.execute("""
+        SELECT *
+        FROM fips_rutrademark LIMIT 1
+    """)
+    tables = cur.fetchall()
+    print(tables, "\n\n\n")
+    
     cur.close()
     conn.close()
-
+    
 except psycopg2.Error as e:
     print("Error: ", e)
