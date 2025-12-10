@@ -1,0 +1,468 @@
+Collecting psycopg2
+  Downloading psycopg2-2.9.11.tar.gz (379 kB)
+[?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/379.6 kB[0m [31m?[0m eta [36m-:--:--[0m
+[2K     [91m━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m51.2/379.6 kB[0m [31m1.3 MB/s[0m eta [36m0:00:01[0m
+[2K     [91m━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m122.9/379.6 kB[0m [31m1.7 MB/s[0m eta [36m0:00:01[0m
+[2K     [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━[0m [32m358.4/379.6 kB[0m [31m3.4 MB/s[0m eta [36m0:00:01[0m
+[2K     [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m378.9/379.6 kB[0m [31m3.5 MB/s[0m eta [36m0:00:01[0m
+[2K     [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m378.9/379.6 kB[0m [31m3.5 MB/s[0m eta [36m0:00:01[0m
+[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m379.6/379.6 kB[0m [31m1.9 MB/s[0m eta [36m0:00:00[0m
+[?25h  Preparing metadata (setup.py) ... [?25l- done
+[?25hCollecting tabulate
+  Downloading tabulate-0.9.0-py3-none-any.whl.metadata (34 kB)
+Downloading tabulate-0.9.0-py3-none-any.whl (35 kB)
+Building wheels for collected packages: psycopg2
+  Building wheel for psycopg2 (setup.py) ... [?25l- \ | / - \ | / - \ | / - \ | / - \ | / - \ | / done
+[?25h  Created wheel for psycopg2: filename=psycopg2-2.9.11-cp311-cp311-linux_x86_64.whl size=503335 sha256=14aa6c085f4902f619e31de6c0f199b06b566dc8ab01cdde597bae1019fbc93b
+  Stored in directory: /root/.cache/pip/wheels/15/a7/0e/37c6d130333cbaac2e6bb15e4ff41ef3a195af78a70907ca0d
+Successfully built psycopg2
+Installing collected packages: tabulate, psycopg2
+Successfully installed psycopg2-2.9.11 tabulate-0.9.0
+[33mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv[0m[33m
+[0m
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m A new release of pip is available: [0m[31;49m24.0[0m[39;49m -> [0m[32;49m25.3[0m
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m To update, run: [0m[32;49mpip install --upgrade pip[0m
+ПРЕДУПРЕЖДЕНИЕ:  Внутренние настройки аудита не были применены, так как аудит запущен в режиме "none"
+[('pg_type',), ('pg_event_trigger',), ('pg_foreign_data_wrapper',), ('fips_wktrademark',), ('fips_db',), ('pg_roles',), ('Cursors',), ('fips_wktmkrepresentative',), ('pg_settings',), ('pg_tables',), ('__tmp_1',), ('__EFMigrationsHistory',), ('fips_wktmkuser',), ('fips_wktmkcorrespondenceaddress',), ('fips_softholder',), ('pg_stat_sys_tables',), ('check_constraints',), ('character_sets',), ('check_constraint_routine_usage',), ('collation_character_set_applicability',), ('pg_replication_slots',), ('pg_stat_database',), ('pg_attribute',), ('pg_stat_database_conflicts',), ('pg_stat_user_functions',), ('pg_stat_xact_user_functions',), ('pg_stat_archiver',), ('pg_stat_bgwriter',), ('collations',), ('column_domain_usage',), ('column_privileges',), ('column_udt_usage',), ('pg_proc',), ('pg_class',), ('pg_attrdef',), ('pg_constraint',), ('pg_inherits',), ('pg_index',), ('pg_operator',), ('pg_opfamily',), ('pg_opclass',), ('pg_am',), ('pg_amop',), ('pg_amproc',), ('pg_language',), ('pg_largeobject_metadata',), ('pg_aggregate',), ('pg_rewrite',), ('pg_trigger',), ('pg_description',), ('pg_cast',), ('pg_enum',), ('pg_namespace',), ('pg_conversion',), ('pg_depend',), ('pg_database',), ('pg_db_role_setting',), ('pg_tablespace',), ('pg_pltemplate',), ('pg_auth_members',), ('pg_shdepend',), ('pg_shdescription',), ('pg_ts_config',), ('pg_ts_config_map',), ('pg_ts_dict',), ('pg_ts_parser',), ('pg_ts_template',), ('pg_extension',), ('pg_foreign_server',), ('pg_foreign_table',), ('pg_policy',), ('pg_replication_origin',), ('pg_default_acl',), ('pg_init_privs',), ('pg_seclabel',), ('pg_shseclabel',), ('pg_collation',), ('pg_range',), ('pg_transform',), ('pg_group',), ('pg_user',), ('pg_policies',), ('pg_rules',), ('pg_views',), ('pg_matviews',), ('pg_indexes',), ('pg_stats',), ('pg_locks',), ('pg_cursors',), ('pg_available_extensions',), ('pg_available_extension_versions',), ('pg_prepared_xacts',), ('pg_prepared_statements',), ('pg_seclabels',), ('pg_stat_all_tables',), ('pg_timezone_abbrevs',), ('pg_timezone_names',), ('pg_stat_xact_all_tables',), ('pg_stat_xact_sys_tables',), ('pg_stat_user_tables',), ('pg_stat_xact_user_tables',), ('pg_statio_all_tables',), ('pg_statio_sys_tables',), ('pg_statio_user_tables',), ('pg_stat_all_indexes',), ('pg_stat_sys_indexes',), ('pg_stat_user_indexes',), ('pg_statio_all_indexes',), ('pg_statio_sys_indexes',), ('pg_statio_user_indexes',), ('pg_statio_all_sequences',), ('pg_statio_sys_sequences',), ('pg_statio_user_sequences',), ('pg_stat_activity',), ('pg_stat_replication',), ('pg_stat_wal_receiver',), ('pg_stat_ssl',), ('pg_stat_progress_vacuum',), ('pg_user_mappings',), ('information_schema_catalog_name',), ('applicable_roles',), ('administrable_role_authorizations',), ('attributes',), ('columns',), ('enabled_roles',), ('constraint_column_usage',), ('constraint_table_usage',), ('role_routine_grants',), ('domain_constraints',), ('key_column_usage',), ('domain_udt_usage',), ('domains',), ('role_column_grants',), ('parameters',), ('referential_constraints',), ('routine_privileges',), ('schemata',), ('routines',), ('sequences',), ('sql_features',), ('sql_implementation_info',), ('sql_languages',), ('sql_packages',), ('sql_sizing',), ('sql_sizing_profiles',), ('triggers',), ('table_constraints',), ('table_privileges',), ('role_usage_grants',), ('role_table_grants',), ('udt_privileges',), ('tables',), ('triggered_update_columns',), ('view_table_usage',), ('role_udt_grants',), ('user_defined_types',), ('usage_privileges',), ('view_routine_usage',), ('view_column_usage',), ('views',), ('data_type_privileges',), ('element_types',), ('column_options',), ('foreign_servers',), ('foreign_data_wrapper_options',), ('foreign_data_wrappers',), ('foreign_server_options',), ('foreign_table_options',), ('foreign_tables',), ('user_mapping_options',), ('user_mappings',), ('Parameters',), ('Requests',), ('fips_spp_ru_inventiontitle',), ('SearchAttributes',), ('Schemas',), ('fips_softauthor',), ('__tmp_2',), ('__tmp_21',), ('fips_agreement_grantee',), ('fips_garaddressobject',), ('fips_garhouse',), ('fips_garroom',), ('fips_inn',), ('fips_madridtmkcorrespondenceaddress',), ('fips_madridtrademark',), ('fips_ruaplcertcorrespondenceaddress',), ('fips_correspondenceaddress',), ('fips_spp_ru_patentfile',), ('fips_ruappellation',), ('fips_agreement',), ('fips_rudesignearlier',), ('fips_rudesignagreement',), ('fips_rudesign',), ('fips_rudgnholder',), ('fips_rutrademark',), ('fips_rutmkpriority',), ('fips_spp_ru_contact',), ('fips_six_ter',), ('fips_spp_ru_patent',), ('fips_spp_ru_priorityclaim',), ('fips_unesco',), ('fips_wktmkgoodsservices',), ('fips_ict',), ('fips_egrknobjectimage',), ('fips_rutrademarkrepresentationfile',), ('review_history',), ('Comments',), ('DraftFiles',), ('Movement',), ('Storage',), ('Links',), ('fips_ruaplapplicant',), ('fips_madridtmkrepresentative',), ('fips_madridtmkuser',), ('fips_ruaplcertholder',), ('Package',), ('fips_ictholder',), ('fips_madridtrademarkrepresentationfile',), ('fips_publicatributes',), ('fips_contact',), ('fips_unesconame',), ('fips_rudesignpatent',), ('fips_rudgnapplicant',), ('fips_rutmkapplicant',), ('fips_unescoimage',), ('fips_dbagreement',), ('fips_agreement_grantor',), ('cursor_records',), ('fips_garapartment',), ('fips_ictapplicant',), ('fips_ictauthor',), ('fips_lisbon',), ('DefaultOrgStructure',), ('__tmp_11',), ('fips_lisbonname',), ('fips_ruaplcorrespondenceaddress',), ('fips_ruappellationcertificate',), ('Translations',), ('fips_madridtmkdisclaimer',), ('fips_madridtmkpriority',), ('fips_ruapluser',), ('fips_dbauthor',), ('fips_ruaplcertuser',), ('fips_ruaplcertapplicant',), ('Counters',), ('Dictionary',), ('fips_ictagreement',), ('fips_madridtmkgoodsservices',), ('fips_rudesignrepresentationfile',), ('Attributes',), ('fips_ictcorrespondenceaddress',), ('fips_madridtmkholder',), ('fips_softcorrespondenceaddress',), ('fips_ruappellcertagreement',), ('Objects',), ('OrgStructure',), ('PackageAttribute',), ('fips_wktmkapplicant',), ('fips_rudesignpriority',), ('fips_rudgndesigner',), ('fips_rudgncorrespondenceaddress',), ('fips_dbcorrespondenceaddress',), ('fips_softagreement',), ('fips_dbapplicant',), ('fips_dbholder',), ('fips_rupatentagreement',), ('fips_associationtrademark',), ('fips_egrknobject',), ('fips_egrulorganization',), ('fips_rutmkagreement',), ('fips_madridtmkapplicant',), ('fips_wktmkagreement',), ('fips_garadmhierarchy',), ('fips_rudesignvariant',), ('log_entry',), ('InternalAttributes',), ('DictionaryBag',), ('PackageLink',), ('fips_soft',), ('fips_ruaplcertrepresentative',), ('fips_ruaplrepresentative',), ('fips_rudesignexhibitionpriority',), ('fips_rudesignguid',), ('fips_wktrademarkrepresentationfile',), ('Settings',), ('UnifiedStatus',), ('fips_rudgnrepresentative',), ('cursor_navigation_info',), ('fips_rutmkdisclaimer',), ('fips_rutmkgoodsservices',), ('fips_rutmkholder',), ('fips_rutmkrepresentative',), ('fips_rutmkuser',), ('fips_six_tername',), ('fips_unescocriteria',), ('fips_unescolocation',), ('fips_rutmkcorrespondenceaddress',), ('fips_wktmkholder',), ('fips_six_terimage',), ('fips_contactaddress',), ('fips_wktmkdisclaimer',), ('fips_softapplicant',), ('fips_garmunhierarchy',), ('fips_innname',), ('r1',), ('fips_wktmkpriority',), ('view_cursor_navigation_info',), ('ObjectAttributes',), ('fips_objects',), ('fips_rudgndesigner_published',), ('view_VirtualAttributes',)]
+====================================================================================================
+СКРИПТ ДЛЯ ИССЛЕДОВАНИЯ ТАБЛИЦ ДЛЯ ФОРМИРОВАНИЯ XML ЕЛК
+====================================================================================================
+Исследование таблиц для формирования XML ЕЛК
+
+====================================================================================================
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| Таблица              | Статус       | Записей   | Колонки (первые 5)             | Ключевые поля                  |
++======================+==============+===========+================================+================================+
+| Requests             | ✓ 4 колонок  | 📊 0       | ID (text) Sign (bytea) Data    | ID: ID Даты: Created           |
+|                      |              | записей   | (ARRAY) Created (text)         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| Movement             | ✓ 22 колонок | 📊 14      | ID (character varying)[36]     | ID: ID, FromId Даты:           |
+|                      |              | записей   | ObjectNumber (uuid)            | CreatedDate, MovementDate      |
+|                      |              |           | RegistrationNumber (character  | Персоны: Name, CreatedByName   |
+|                      |              |           | varying)[64] Name (character   | Документы: ObjectNumber,       |
+|                      |              |           | varying)[256] IsHead (boolean) | RegistrationNumber             |
+|                      |              |           | ... и еще 17 колонок           |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| Comments             | ✓ 6 колонок  | 📊 0       | CommentId (bigint)             | ID: CommentId, ParentCommentId |
+|                      |              | записей   | ParentCommentId (bigint)       | Даты: CreateDate               |
+|                      |              |           | CommentData (text)             |                                |
+|                      |              |           | ParentObjectId (uuid)          |                                |
+|                      |              |           | CreateDate (timestamp without  |                                |
+|                      |              |           | time zone) ... и еще 1 колонок |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| Parameters           | ✓ 9 колонок  | 📊 32      | ID (character varying)[36]     | ID: ID, GuidValue Даты:        |
+|                      |              | записей   | Name (text) TextValue (text)   | DateValue, CreatedDate         |
+|                      |              |           | IntValue (integer) FloatValue  | Персоны: Name                  |
+|                      |              |           | (real) ... и еще 4 колонок     |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_contact         | ✓ 34 колонок | 📊 6334    | contact_uid (uuid)             | ID: contact_uid, individual_id |
+|                      |              | записей   | language_code (character       | Даты: update_time, delete_time |
+|                      |              |           | varying)[10] name (character   | Персоны: name, name_translit,  |
+|                      |              |           | varying)[2048] name_translit   | phone Документы:               |
+|                      |              |           | (character varying)[2048]      | employee_number,               |
+|                      |              |           | nationality_code (character    | customer_number                |
+|                      |              |           | varying)[10] ... и еще 29      |                                |
+|                      |              |           | колонок                        |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_correspondencea | ✓ 17 колонок | 📊 2772    | cor_address_uid (uuid)         | ID: cor_address_uid Даты:      |
+| ddress               |              | записей   | address_text (text)            | update_time, delete_time       |
+|                      |              |           | language_code (character       | Персоны: region_name,          |
+|                      |              |           | varying)[10] country_code      | province_name, city_name       |
+|                      |              |           | (character varying)[10]        |                                |
+|                      |              |           | postal_code (character)[6] ... |                                |
+|                      |              |           | и еще 12 колонок               |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_wktmkuser       | ✓ 2 колонок  | 📊 0       | contact_uid (uuid) wktmk_uid   | ID: contact_uid, wktmk_uid     |
+|                      |              | записей   | (uuid)                         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_rutmkuser       | ✓ 2 колонок  | 📊 0       | contact_uid (uuid) rutmk_uid   | ID: contact_uid, rutmk_uid     |
+|                      |              | записей   | (uuid)                         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_madridtmkuser   | ✓ 2 колонок  | 📊 0       | contact_uid (uuid) mdtmk_uid   | ID: contact_uid, mdtmk_uid     |
+|                      |              | записей   | (uuid)                         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| DraftFiles           | ✓ 8 колонок  | 📊 939742  | Number (uuid) BeforeFirstSign  | Документы: Number,             |
+|                      |              | записей   | (timestamp without time zone)  | ParentNumber                   |
+|                      |              |           | AfterLastSign (timestamp       |                                |
+|                      |              |           | without time zone)             |                                |
+|                      |              |           | BeforeAdditionalSigns          |                                |
+|                      |              |           | (timestamp without time zone)  |                                |
+|                      |              |           | ParentNumber (uuid) ... и еще  |                                |
+|                      |              |           | 3 колонок                      |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| Storage              | ✓ 6 колонок  | 📊 18      | ID (character varying)[36]     | ID: ID, DepartmentId Статусы:  |
+|                      |              | записей   | Kind (integer) DepartmentId    | State Персоны: Name            |
+|                      |              |           | (text) Name (character         |                                |
+|                      |              |           | varying)[64] State (integer)   |                                |
+|                      |              |           | ... и еще 1 колонок            |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| Links                | ✓ 9 колонок  | 📊 148574  | ID (uuid) FromObject (uuid)    | ID: ID Даты: UpdateDate,       |
+|                      |              | записей   | ToObject (uuid) LinkDetails    | UpdateWeightDate               |
+|                      |              |           | (text) Kind (integer) ... и    |                                |
+|                      |              |           | еще 4 колонок                  |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| Package              | ✓ 23 колонок | 📊 12      | Number (uuid) ParentNumber     | ID: CreatedById, DestroyedById |
+|                      |              | записей   | (uuid) ObjectNumber (uuid)     | Даты: CreatedDate,             |
+|                      |              |           | PackageNumber (text)           | ModifiedDate Статусы: State    |
+|                      |              |           | RegistrationNumber (text) ...  | Персоны: CreatedByName         |
+|                      |              |           | и еще 18 колонок               | Документы: Number,             |
+|                      |              |           |                                | ParentNumber                   |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| review_history       | ✓ 7 колонок  | 📊 0       | id (uuid) object_number (uuid) | ID: id Персоны: document_name  |
+|                      |              | записей   | document_name (text) begin_at  | Документы: object_number,      |
+|                      |              |           | (timestamp without time zone)  | document_name                  |
+|                      |              |           | finish_at (timestamp without   |                                |
+|                      |              |           | time zone) ... и еще 2 колонок |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| UnifiedStatus        | ✓ 7 колонок  | 📊 11      | ID (character varying)[36]     | ID: ID Персоны: Name           |
+|                      |              | записей   | Name (character varying)[64]   |                                |
+|                      |              |           | System (integer) IsProcessEnd  |                                |
+|                      |              |           | (boolean) CodeIK (character    |                                |
+|                      |              |           | varying)[64] ... и еще 2       |                                |
+|                      |              |           | колонок                        |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_ruapluser       | ✓ 2 колонок  | 📊 5       | contact_uid (uuid) ruapl_uid   | ID: contact_uid, ruapl_uid     |
+|                      |              | записей   | (uuid)                         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_ruaplcertuser   | ✓ 3 колонок  | 📊 2       | ruaplcert_uid (uuid)           | ID: ruaplcert_uid, contact_uid |
+|                      |              | записей   | contact_uid (uuid)             |                                |
+|                      |              |           | user_category (character       |                                |
+|                      |              |           | varying)[1024]                 |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_rutmkapplicant  | ✓ 2 колонок  | 📊 1545    | contact_uid (uuid) rutmk_uid   | ID: contact_uid, rutmk_uid     |
+|                      |              | записей   | (uuid)                         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_wktmkapplicant  | ✓ 2 колонок  | 📊 9       | contact_uid (uuid) wktmk_uid   | ID: contact_uid, wktmk_uid     |
+|                      |              | записей   | (uuid)                         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_madridtmkapplic | ✓ 2 колонок  | 📊 0       | contact_uid (uuid) mdtmk_uid   | ID: contact_uid, mdtmk_uid     |
+| ant                  |              | записей   | (uuid)                         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_softapplicant   | ✓ 2 колонок  | 📊 43      | soft_uid (uuid) contact_uid    | ID: soft_uid, contact_uid      |
+|                      |              | записей   | (uuid)                         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_dbapplicant     | ✓ 2 колонок  | 📊 17      | db_uid (uuid) contact_uid      | ID: db_uid, contact_uid        |
+|                      |              | записей   | (uuid)                         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+| fips_ictapplicant    | ✓ 2 колонок  | 📊 1       | ict_uid (uuid) contact_uid     | ID: ict_uid, contact_uid       |
+|                      |              | записей   | (uuid)                         |                                |
++----------------------+--------------+-----------+--------------------------------+--------------------------------+
+
+====================================================================================================
+РЕКОМЕНДАЦИИ ПО ТАБЛИЦАМ:
+
+1. ОСНОВНЫЕ ТАБЛИЦЫ (вероятно содержат данные заявок):
+   • Requests - исследуйте первым делом
+   • Movement - исследуйте первым делом
+   • Comments - исследуйте первым делом
+   • Parameters - исследуйте первым делом
+
+2. ТАБЛИЦЫ С ДАННЫМИ ЗАЯВИТЕЛЕЙ:
+   • fips_contact
+   • fips_correspondenceaddress
+
+3. СЛЕДУЮЩИЕ ШАГИ:
+   • Проверьте таблицу 'Requests' - скорее всего, это основная таблица заявок
+   • Найдите связь между 'Requests' и таблицами с данными заявителей
+   • Ищите поля с номерами заявок (orderNumber в XML)
+   • Ищите поля со статусами и датами их изменения
+
+============================================================
+ДЕТАЛЬНАЯ ИНФОРМАЦИЯ О ТАБЛИЦЕ: Requests
+============================================================
+
+Структура таблицы:
+--------------------------------------------------------------------------------
+  ID                             text                 NOT NULL
+  Sign                           bytea                NULL
+  Data                           ARRAY                NULL
+  Created                        text                 NULL
+
+Примеры данных (первые 3 записи):
+--------------------------------------------------------------------------------
+Таблица пустая
+
+Возможные связи с другими таблицами:
+--------------------------------------------------------------------------------
+  Внешние ключи не найдены
+
+============================================================
+ДЕТАЛЬНАЯ ИНФОРМАЦИЯ О ТАБЛИЦЕ: Movement
+============================================================
+
+Структура таблицы:
+--------------------------------------------------------------------------------
+  ID                             character varying    [36] NOT NULL
+  ObjectNumber                   uuid                 NULL
+  RegistrationNumber             character varying    [64] NULL
+  Name                           character varying    [256] NULL
+  IsHead                         boolean              NOT NULL
+  FromId                         character varying    [36] NOT NULL
+  ToId                           character varying    [36] NOT NULL
+  CreatedDate                    timestamp without time zone NOT NULL
+  MovementDate                   timestamp without time zone NOT NULL
+  CreatedByID                    text                 NULL
+  EmployeeId                     text                 NULL
+  ResponsibleId                  text                 NULL
+  Comments                       text                 NULL
+  ParentId                       character varying    [36] NULL
+  Kind                           integer              NOT NULL
+  ArchiveModelNumber             character varying    [64] NULL
+  IsElectronic                   boolean              NOT NULL DEFAULT: false
+  Term                           integer              NOT NULL DEFAULT: 0
+  PreviousCreatedByID            text                 NULL
+  DeliveryKind                   integer              NULL DEFAULT: '-1'::integer
+  MovementsKind                  integer              NOT NULL DEFAULT: '-1'::integer
+  CreatedByName                  character varying    [64] NULL
+
+Примеры данных (первые 3 записи):
+--------------------------------------------------------------------------------
+
+Запись #1:
+  ID: 2fdaee05-4363-4f77-d022-08db82197663
+  ObjectNumber: NULL
+  RegistrationNumber: 0000000001
+  Name: NULL
+  IsHead: True
+  FromId: 216efe68-2312-4376-ab7d-0c432c0e82c7
+  ToId: 65859e8c-ec03-4248-8c06-c382078e88fc
+  CreatedDate: 2023-09-29 17:04:59.502957
+  MovementDate: 2023-09-29 17:04:59.503051
+  CreatedByID: NULL
+  EmployeeId: NULL
+  ResponsibleId: NULL
+  Comments: NULL
+  ParentId: NULL
+  Kind: 0
+  ArchiveModelNumber: NULL
+  IsElectronic: False
+  Term: 0
+  PreviousCreatedByID: NULL
+  DeliveryKind: 0
+  MovementsKind: 0
+  CreatedByName: Иванов И. И.
+
+Запись #2:
+  ID: 7656b84a-49da-45b2-d023-08db82197663
+  ObjectNumber: 30289953-a03d-48b0-1355-08daf7a5dce4
+  RegistrationNumber: NULL
+  Name: NULL
+  IsHead: False
+  FromId: 216efe68-2312-4376-ab7d-0c432c0e82c7
+  ToId: 65859e8c-ec03-4248-8c06-c382078e88fc
+  CreatedDate: 2023-09-29 17:04:59.503183
+  MovementDate: 2023-09-29 17:04:59.503187
+  CreatedByID: NULL
+  EmployeeId: NULL
+  ResponsibleId: NULL
+  Comments: NULL
+  ParentId: 2fdaee05-4363-4f77-d022-08db82197663
+  Kind: 0
+  ArchiveModelNumber: NULL
+  IsElectronic: False
+  Term: 0
+  PreviousCreatedByID: NULL
+  DeliveryKind: 0
+  MovementsKind: 0
+  CreatedByName: Иванов И. И.
+
+Запись #3:
+  ID: c2746211-1d13-49f1-d029-08db82197663
+  ObjectNumber: NULL
+  RegistrationNumber: 0000000002
+  Name: NULL
+  IsHead: True
+  FromId: 216efe68-2312-4376-ab7d-0c432c0e82c7
+  ToId: 65859e8c-ec03-4248-8c06-c382078e88fc
+  CreatedDate: 2023-10-02 13:21:22.246488
+  MovementDate: 2023-10-02 13:21:22.246491
+  CreatedByID: NULL
+  EmployeeId: NULL
+  ResponsibleId: NULL
+  Comments: NULL
+  ParentId: NULL
+  Kind: 0
+  ArchiveModelNumber: NULL
+  IsElectronic: False
+  Term: 0
+  PreviousCreatedByID: NULL
+  DeliveryKind: 0
+  MovementsKind: 0
+  CreatedByName: Иванов И. И.
+
+Возможные связи с другими таблицами:
+--------------------------------------------------------------------------------
+  Внешние ключи не найдены
+
+============================================================
+ДЕТАЛЬНАЯ ИНФОРМАЦИЯ О ТАБЛИЦЕ: fips_contact
+============================================================
+
+Структура таблицы:
+--------------------------------------------------------------------------------
+  contact_uid                    uuid                 NOT NULL
+  language_code                  character varying    [10] NOT NULL
+  name                           character varying    [2048] NOT NULL
+  name_translit                  character varying    [2048] NULL
+  nationality_code               character varying    [10] NULL
+  phone                          character varying    [64] NULL
+  fax                            character varying    [64] NULL
+  rutmk_used                     character varying    [2048] NULL
+  email                          character varying    [240] NULL
+  address_text                   text                 NULL
+  country_code                   character varying    [10] NOT NULL
+  postal_code                    character            [6] NULL
+  region_name                    character varying    [64] NULL
+  province_name                  character varying    [1024] NULL
+  city_name                      character varying    [256] NULL
+  address_line                   character varying    [512] NULL
+  incorporation                  character varying    [1024] NULL
+  employee_number                character varying    [64] NULL
+  inn                            character varying    [64] NULL
+  kio                            character varying    [64] NULL
+  customer_number                character varying    [64] NULL
+  ogrn                           character varying    [64] NULL
+  snils                          character varying    [64] NULL
+  individual_id                  character varying    [1024] NULL
+  passport_number                character varying    [1024] NULL
+  ehd_serial                     bigint               NOT NULL DEFAULT: nextval('fips_contact_ehd_serial_seq'::regclass)
+  update_time                    timestamp without time zone NOT NULL DEFAULT: now()
+  delete_time                    timestamp without time zone NULL
+  contact_type                   integer              NULL
+  entity_category                text                 NULL
+  address_text_translit          text                 NULL
+  pseudonym                      character varying    [250] NULL
+  author_confidentiality_application character varying    [32] NULL
+  author_confidentiality_patent  character varying    [32] NULL
+
+Примеры данных (первые 3 записи):
+--------------------------------------------------------------------------------
+
+Запись #1:
+  contact_uid: 75d826af-e6ff-43cb-95e7-f2ccf34c732b
+  language_code: ru
+  name: АКЦИОНЕРНОЕ ОБЩЕСТВО "Ярославский завод "СТРОЙТЕХНИКА" 
+  name_translit: NULL
+  nationality_code: NULL
+  phone: 84852458710
+  fax: NULL
+  rutmk_used: NULL
+  email: patent@yartpp.ru
+  address_text: 150023, г. Ярославль, ул. Гагарина, 64-а
+  country_code: RU
+  postal_code: 150023
+  region_name: NULL
+  province_name: Ярославская область
+  city_name: NULL
+  address_line: NULL
+  incorporation: NULL
+  employee_number: NULL
+  inn: 7605002084
+  kio: NULL
+  customer_number: 760501001
+  ogrn: 1027600788511
+  snils: NULL
+  individual_id: NULL
+  passport_number: NULL
+  ehd_serial: 5
+  update_time: 2022-10-05 00:52:36.906140
+  delete_time: NULL
+  contact_type: NULL
+  entity_category: NULL
+  address_text_translit: NULL
+  pseudonym: NULL
+  author_confidentiality_application: NULL
+  author_confidentiality_patent: NULL
+
+Запись #2:
+  contact_uid: ba289395-d925-4663-b21a-80381ba1e1fd
+  language_code: ru
+  name: Козина Татьяна Александровна
+  name_translit: NULL
+  nationality_code: NULL
+  phone: +7 (920) 654-17-73; (4852) 45-87-10
+  fax: NULL
+  rutmk_used: NULL
+  email: kozina.t.a@yandex.ru, patent@yartpp.ru
+  address_text: ул. Свободы, д. 62, г.Ярославль, Ярославская обл., 150014, ЯрТПП
+  country_code: 
+  postal_code: NULL
+  region_name: NULL
+  province_name: NULL
+  city_name: NULL
+  address_line: NULL
+  incorporation: NULL
+  employee_number: NULL
+  inn: NULL
+  kio: NULL
+  customer_number: NULL
+  ogrn: NULL
+  snils: NULL
+  individual_id: NULL
+  passport_number: NULL
+  ehd_serial: 6
+  update_time: 2022-10-05 00:52:36.906140
+  delete_time: NULL
+  contact_type: NULL
+  entity_category: NULL
+  address_text_translit: NULL
+  pseudonym: NULL
+  author_confidentiality_application: NULL
+  author_confidentiality_patent: NULL
+
+Запись #3:
+  contact_uid: 9889069c-286d-4583-bed9-81b3fe620880
+  language_code: ru
+  name: Общество с ограниченной ответственностью "Л-Бюро"
+  name_translit: NULL
+  nationality_code: NULL
+  phone: 89217854913
+  fax: 88123740509
+  rutmk_used: NULL
+  email: annator2013@gmail.com
+  address_text: 197342, г. Санкт-Петербург, Выборгская наб., дом 61, литер А, офис 512
+  country_code: RU
+  postal_code: 197342
+  region_name: NULL
+  province_name: Санкт-Петербург
+  city_name: NULL
+  address_line: NULL
+  incorporation: NULL
+  employee_number: NULL
+  inn: 7814781998
+  kio: NULL
+  customer_number: 781401001
+  ogrn: 1207800139348
+  snils: NULL
+  individual_id: NULL
+  passport_number: NULL
+  ehd_serial: 7
+  update_time: 2022-10-05 09:41:11.130678
+  delete_time: NULL
+  contact_type: NULL
+  entity_category: NULL
+  address_text_translit: NULL
+  pseudonym: NULL
+  author_confidentiality_application: NULL
+  author_confidentiality_patent: NULL
+
+Возможные связи с другими таблицами:
+--------------------------------------------------------------------------------
+  Внешние ключи не найдены
+
+====================================================================================================
+СОВЕТЫ ДЛЯ ДАЛЬНЕЙШЕЙ РАБОТЫ:
+1. В таблице 'Requests' ищите поля:
+   - Номер заявки (возможно order_number, external_id)
+   - Дата создания (created_date, request_date)
+   - Статус (status_id, state)
+   - ID заявителя (user_id, applicant_id)
+   - Тип услуги (service_type, service_code)
+
+2. Для получения данных заявителя:
+   - Найдите связь Requests -> fips_* таблицы
+   - Ищите ФИО, ИНН, СНИЛС, паспортные данные
+
+3. Для истории статусов:
+   - Проверьте таблицу 'Movement' или 'review_history'
+   - Ищите даты изменения статусов, коды статусов
