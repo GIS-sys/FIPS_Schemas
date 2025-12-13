@@ -31,7 +31,7 @@ class DataTemplateHowToElement:
         return result
 
     def to_value(self, db_connector: DBConnector, condition_value: Any):
-        condition_column = (self.condition_column if self.condition_column is not None else db_connector.LAST_INDEX.column())
+        condition_column = (self.condition_column if self.condition_column is not None else db_connector.get_index_column_name())
         data = db_connector.fetchall(
             f"""
                 SELECT {self.column_name} FROM {self.table_name}

@@ -24,6 +24,9 @@ class DBConnector:
         )
         self.LAST_INDEX = DBIndex("2025-06-25")  # "2025-03-04" # 2025880254 # TODO
 
+    def get_index_column_name(self) -> str:
+        return self.LAST_INDEX.column()
+
     def __del__(self):
         self.conn.close()
 
