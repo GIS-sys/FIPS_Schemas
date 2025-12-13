@@ -32,8 +32,8 @@ class XMLGenerator:
 
     def _dict_to_xml(self, parent: ET.Element, data: dict[str, Any],
                     is_root: bool = False):
-        if is_root:
-            parent.set("xmlns", "http://epgu.gosuslugi.ru/elk/status/1.0.2")
+        # if is_root:
+        #     parent.set("xmlns", "http://epgu.gosuslugi.ru/elk/status/1.0.2")
 
         for key, value in data.items():
             if key.startswith('@'):  # Attribute
