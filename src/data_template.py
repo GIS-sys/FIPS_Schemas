@@ -43,8 +43,12 @@ class DataTemplateHowToElement:
             return None
         data = data[0][0]
         if self.after is not None:
-            foo = eval(f"lambda x: ({self.after})")
-            data = foo(data)
+            try:
+                foo = eval(f"lambda x: ({self.after})")
+                data = foo(data)
+            except Exception as e:
+                logger.log(f"\nERROR: {e}")
+                return None
         return data
 
 
@@ -129,31 +133,73 @@ class DataTemplate:
                                         DataTemplateHowToElement(column_name="appl_number", table_name="fips_rutrademark"),
                                     ]
                                 ).to_dict(),
+                                "fullName": DataTemplateElement(
+                                    example="ООО АБВ",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark"),
+                                    ]
+                                ).to_dict(),
                                 "lastName": DataTemplateElement(
                                     example="Иванов",
                                     howto=[
                                         DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.split(' ')[0]"),
                                     ]
                                 ).to_dict(),
-                                "firstName": "Иван",
-                                "middleName": "Иванович",
+                                "firstName": DataTemplateElement(
+                                    example="Иван",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.split(' ')[1]"),
+                                    ]
+                                ).to_dict(),
+                                "middleName": DataTemplateElement(
+                                    example="Иванович",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.split(' ')[2]"),
+                                    ]
+                                ).to_dict(),
                                 "citizenship": "1"
                             }
                         },
-                        "senderInn": "1234567890",
+                        "senderInn": DataTemplateElement(
+                            example="1234567890",
+                            howto=[
+                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark"),
+                                DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="name"),
+                            ]
+                        ).to_dict(),
                         "serviceTargetCode": "12345678901234567890",
                         "userSelectedRegion": "45000000",
-                        "orderNumber": '31d4ec1a-43b3-4ade-bce8-eb3df9e6e940',
-                        "requestDate": '2025-12-12T10:31:23.042643',
+                        "orderNumber": DataTemplateElement(
+                            example="31d4ec1a-43b3-4ade-bce8-eb3df9e6e940",
+                            howto=[
+                                DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                            ]
+                        ).to_dict(),
+                        "requestDate": DataTemplateElement(
+                            example="2025-12-12T10:31:23.042643",
+                            howto=[
+                                DataTemplateHowToElement(column_name="appl_receiving_date", table_name="fips_rutrademark"),
+                            ]
+                        ).to_dict(),
                         "OfficeInfo": {
-                            "OfficeName": "МФЦ Центрального района",
+                            "OfficeName": "ФИПС",
                             "ApplicationAcceptance": "1"
                         },
                         "statusHistoryList": {
                             "statusHistory": [{
-                                "status": "1",
+                                "status": DataTemplateElement(
+                                    example="A-1-1-W10-W00-X000",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="status_code_st27", table_name="fips_rutrademark"),
+                                    ]
+                                ).to_dict(),
                                 "IsInformed": "false",
-                                "statusDate": '2025-12-12T10:32:23.042643',
+                                "statusDate": DataTemplateElement(
+                                    example="2025-12-12T10:32:23.042643",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="status_date", table_name="fips_rutrademark"),
+                                    ]
+                                ).to_dict(),
                             }]
                         }
                     }]

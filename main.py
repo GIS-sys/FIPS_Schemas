@@ -50,12 +50,12 @@ def main():
         logger.log("\nDEBUG Data filled from database\n", data_template.data, "\n")
         xml_data = xml_gen.json_to_xml(data_template.data)
         logger.log("\nDEBUG XML", xml_data, "\n")
+        with open(config.DATA_FOLDER / f"{last_id}.xml", "w") as f:
+            f.write(xml_data)
         validation_result = xml_gen.validate_xml(xml_data)
         logger.log("XML Validation result:")
         if validation_result["valid"]:
             logger.log(f"OK {validation_result["message"]}")
-            with open(config.DATA_FOLDER / f"{last_id}.xml", "w") as f:
-                f.write(xml_data)
         else:
             logger.log("Failed!")
             logger.log("\nErrors:")
