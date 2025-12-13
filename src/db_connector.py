@@ -1,16 +1,24 @@
 import psycopg2
 
+import src.config as config
 
-class DBIndex:
-    def __init__(self, value):
-        self.value = value
+
+class DBIndexTrackProcessed:
+    def __init__(self):
+        self.used: list[str] = []
 
     @classmethod
     def column(cls) -> str:
-        return "appl_receiving_date"
+        return "rutmk_uid"
+
+    def add(self, ind: str):
+        self.used.append(ind)
 
     def where(self) -> str:
-        return f"({self.column()} > '{self.value}')"
+        if len(self.used) == 0:
+            return "(true)"
+        ind_str = ", ".join(["'" + ind + "'" for ind in self.used])
+        return f"({self.column()} NOT IN ({ind_str}))"
 
 
 class DBConnector:
@@ -22,10 +30,10 @@ class DBConnector:
             user=user,
             password=pswd,
         )
-        self.LAST_INDEX = DBIndex("2025-06-25")  # "2025-03-04" # 2025880254 # TODO
+        self.index_track = DBIndexTrackProcessed()
 
     def get_index_column_name(self) -> str:
-        return self.LAST_INDEX.column()
+        return self.index_track.column()
 
     def __del__(self):
         self.conn.close()
@@ -37,19 +45,19 @@ class DBConnector:
         return data
 
     def get_last_index(self):
-        # TODO
-        data = self.fetchall(
-            f"""
-                SELECT {self.LAST_INDEX.column()} FROM fips_rutrademark
-                WHERE {self.LAST_INDEX.where()}
-                ORDER BY appl_receiving_date LIMIT 1
-            """
-        )
+        req = f"""
+            SELECT {self.index_track.column()} FROM fips_rutrademark
+            WHERE ({config.MONITOR_STARTING_DATE_COL} >= '{config.MONITOR_STARTING_DATE_VAL}') AND {self.index_track.where()}
+            ORDER BY appl_receiving_date LIMIT 1
+        """
+        data = self.fetchall(req)
         print("TODO", data)
+        if not data:
+            return None
         return data[0][0]
 
     def mark_last_index(self, last_id):
-        print("TODO", "setting last id", last_id)
+        self.index_track.add(last_id)
 
     def get_debug_info(self) -> str:
         result = ""

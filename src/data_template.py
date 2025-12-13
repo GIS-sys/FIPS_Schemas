@@ -32,15 +32,18 @@ class DataTemplateHowToElement:
 
     def to_value(self, db_connector: DBConnector, condition_value: Any):
         condition_column = (self.condition_column if self.condition_column is not None else db_connector.get_index_column_name())
-        data = db_connector.fetchall(
-            f"""
-                SELECT {self.column_name} FROM {self.table_name}
-                WHERE {condition_column} = '{condition_value}'
-            """
-        )
+        req = f"""
+            SELECT {self.column_name} FROM {self.table_name}
+            WHERE {condition_column} = '{condition_value}'
+        """
+        data = db_connector.fetchall(req)
+        print("Debug", "to_value\n", data, "\n", req)
+        if not data or data[0] is None or data[0][0] is None:
+            return None
+        data = data[0][0]
         if self.after is not None:
             foo = eval(f"lambda x: ({self.after})")
-            data = [(foo(x[0]),) for x in data]
+            data = foo(data)
         return data
 
 
@@ -78,7 +81,7 @@ class DataTemplateElement:
         last_result = ind
         for howto_el in self.howto:
             data = howto_el.to_value(db_connector, last_result)
-            last_result = data[0][0]
+            last_result = data
         return str(last_result)
 
 
@@ -148,7 +151,7 @@ class DataTemplate:
                         "statusHistoryList": {
                             "statusHistory": [{
                                 "status": "1",
-                                "IsInformed": False,
+                                "IsInformed": "false",
                                 "statusDate": '2025-12-12T10:32:23.042643',
                             }]
                         }

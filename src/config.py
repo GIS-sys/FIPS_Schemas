@@ -11,3 +11,6 @@ DB_PORT = 5432
 DB_NAME = "uad_int"
 DB_USER = "gegorov"
 DB_PASS = "87zerkaLo22"
+
+MONITOR_STARTING_DATE_VAL = "2025-06-25"  # "2025-03-04"
+MONITOR_STARTING_DATE_COL = "appl_receiving_date"
