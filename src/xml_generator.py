@@ -112,7 +112,7 @@ class XMLGenerator:
                 result['valid'] = False
                 # Try to get more detailed error information
                 try:
-                    errors = list(self.schema.iter_errors(xml_file))
+                    errors = list(self.schema.iter_errors(xml_str))
                     for error in errors:
                         result['errors'].append(str(error))
                 except:
