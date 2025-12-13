@@ -1,2 +1,4 @@
-generated_request.xml
 __pycache__/
+
+data/**
+!data/schemas.xsd
