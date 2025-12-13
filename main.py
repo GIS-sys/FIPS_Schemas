@@ -19,7 +19,7 @@ def main():
         pswd=config.DB_PASS
     )
     info = db_connector.get_debug_info()
-    with open(config.FILE_DB_DEBUG_INFO, "w") as f:
+    with open(config.FILE_DB_DEBUG, "w") as f:
         f.write(str(info))
 
     # Initialize class for work filling and validating XML
@@ -43,7 +43,7 @@ def main():
     # - validate XML against the XSD schema
     data_template = DataTemplate(copy.deepcopy(data_template_json))
     print("\nDEBUG Data from template\n", data_template.data, "\n")
-    data_template.fill_template(db_connector)
+    last_id = data_template.fill_template(db_connector)
     print("\nDEBUG Data filled from database\n", data_template.data, "\n")
     xml_data = xml_gen.json_to_xml(data_template.data)
     print("\nDEBUG XML", xml_data, "\n")
@@ -51,6 +51,7 @@ def main():
     print("XML Validation result:")
     if validation_result["valid"]:
         print(f"OK {validation_result["message"]}")
+        db_connector.mark_last_index(last_id)
     else:
         print("Failed!")
         print("\nErrors:")

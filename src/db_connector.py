@@ -33,6 +33,21 @@ class DBConnector:
             data = cur.fetchall()
         return data
 
+    def get_last_index(self):
+        # TODO
+        data = self.fetchall(
+            f"""
+                SELECT {self.LAST_INDEX.column()} FROM fips_rutrademark
+                WHERE {self.LAST_INDEX.where()}
+                ORDER BY appl_receiving_date LIMIT 1
+            """
+        )
+        print("TODO", data)
+        return data[0][0]
+
+    def mark_last_index(self, last_id):
+        print("TODO", "setting last id", last_id)
+
     def get_debug_info(self) -> str:
         result = ""
         result += "All tables:\n"

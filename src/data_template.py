@@ -3,8 +3,49 @@ from typing import Any, Self
 from src.db_connector import DBConnector
 
 
+class DataTemplateHowToElement:
+    def __init__(self, table_name: str, column_name: str, condition_column: str = None, after: str = None):
+        self.table_name = table_name
+        self.column_name = column_name
+        self.condition_column = condition_column
+        self.after = after
+
+    @staticmethod
+    def from_dict(obj: dict) -> Self:
+        dthte = DataTemplateHowToElement(
+            table_name=obj["table_name"],
+            column_name=obj["column_name"],
+            condition_column=obj.get("condition_column", None),
+            after=obj.get("after", None),
+        )
+        return dthte
+
+    def to_dict(self) -> dict[str, Any]:
+        result = {
+            "table_name": self.table_name,
+            "column_name": self.column_name,
+            "condition_column": self.condition_column,
+            "after": self.after,
+        }
+        result = {k: result[k] for k in result if result[k] is not None}
+        return result
+
+    def to_value(self, db_connector: DBConnector, condition_value: Any):
+        condition_column = (self.condition_column if self.condition_column is not None else db_connector.LAST_INDEX.column())
+        data = db_connector.fetchall(
+            f"""
+                SELECT {self.column_name} FROM {self.table_name}
+                WHERE {condition_column} = '{condition_value}'
+            """
+        )
+        if self.after is not None:
+            foo = eval(f"lambda x: ({self.after})")
+            data = [(foo(x[0]),) for x in data]
+        return data
+
+
 class DataTemplateElement:
-    def __init__(self, example: str, howto: list[str]):
+    def __init__(self, example: str, howto: list[DataTemplateHowToElement]):
         self.example = example
         self.howto = howto
 
@@ -16,14 +57,17 @@ class DataTemplateElement:
         return {
             "_DataTemplateElement_": {
                 "example": self.example,
-                "howto": self.howto
+                "howto": [howto_el.to_dict() for howto_el in self.howto],
             }
         }
 
     @staticmethod
     def from_dict(obj: dict) -> Self:
         obj = obj["_DataTemplateElement_"]
-        dte = DataTemplateElement(obj["example"], obj["howto"])
+        dte = DataTemplateElement(
+            example=obj["example"],
+            howto=[DataTemplateHowToElement.from_dict(howto_el) for howto_el in obj["howto"]],
+        )
         return dte
 
     def to_value(self, db_connector: DBConnector = None, ind = None) -> str:
@@ -31,14 +75,12 @@ class DataTemplateElement:
             return self.example
         if ind is None:
             raise Exception("DataTemplateElement::to_value got ind=None")
-        # TODO
-        data = db_connector.fetchall(
-            f"""
-                SELECT {self.howto[0]} FROM {self.howto[1]}
-                WHERE {db_connector.LAST_INDEX.column()} = '{ind}'
-            """
-        )
-        return str(data)
+        last_result = ind
+        for howto_el in self.howto:
+            data = howto_el.to_value(db_connector, last_result)
+            last_result = data[0][0]
+        return str(last_result)
+
 
 
 class DataTemplate:
@@ -61,19 +103,11 @@ class DataTemplate:
                 for args in self.iterate(data[k]):
                     yield args
 
-    def fill_template(self, db_connector: DBConnector) -> dict:
-        # TODO
-        data = db_connector.fetchall(
-            f"""
-                SELECT {db_connector.LAST_INDEX.column()} FROM fips_rutrademark
-                WHERE {db_connector.LAST_INDEX.where()}
-                ORDER BY appl_receiving_date LIMIT 1
-            """
-        )
-        print(data)
-        ind = data[0][0]
+    def fill_template(self, db_connector: DBConnector) -> Any:
+        ind = db_connector.get_last_index()
         for root, key in self.elements:
             root[key] = root[key].to_value(db_connector, ind)
+        return ind
 
     @staticmethod
     def create_example_json() -> dict[str, Any]:
@@ -85,12 +119,16 @@ class DataTemplate:
                         "user": {
                             "userPersonalDoc": {
                                 "PersonalDocType": "1",
-                                "number": "1234567890",
+                                "number": DataTemplateElement(
+                                    example="1234567890",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="appl_number", table_name="fips_rutrademark"),
+                                    ]
+                                ).to_dict(),
                                 "lastName": DataTemplateElement(
                                     example="Иванов",
                                     howto=[
-                                        "applicants",
-                                        "fips_rutrademark"
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.split(' ')[0]"),
                                     ]
                                 ).to_dict(),
                                 "firstName": "Иван",
