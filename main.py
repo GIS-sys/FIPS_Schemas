@@ -40,17 +40,17 @@ def main():
     # - convert the gathered data to XML
     # - validate XML against the XSD schema
     data_template = DataTemplate(copy.deepcopy(data_template_json))
-    print("DEBUG", data_template.data)
+    print("\nDEBUG Data from template\n", data_template.data, "\n")
     data_template.fill_template(db_connector)
-    print("DEBUG", data_template.data)
+    print("\nDEBUG Data filled from database\n", data_template.data, "\n")
     xml_data = xml_gen.json_to_xml(data_template.data)
-    print("DEBUG", xml_data)
+    print("\nDEBUG XML", xml_data, "\n")
     validation_result = xml_gen.validate_xml(xml_data)
-    print("DEBUG", validation_result)
+    print("XML Validation result:")
     if validation_result["valid"]:
-        print(f"✓ {validation_result["message"]}")
+        print(f"OK {validation_result["message"]}")
     else:
-        print("✗ XML validation failed!")
+        print("Failed!")
         print("\nErrors:")
         for error in validation_result["errors"]:
             print(f"  - {error}")
