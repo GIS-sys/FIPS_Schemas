@@ -33,38 +33,40 @@ class DBConnector:
             data = cur.fetchall()
         return data
 
-    def print_debug_info(self):
-        print("All tables:")
-        print(self.fetchall(
+    def get_debug_info(self) -> str:
+        result = ""
+        result += "All tables:\n"
+        result += str(self.fetchall(
             """
                 SELECT table_name
                 FROM information_schema.tables
             """
         ))
-        print("\nSpecific table 'fips_rutrademark' columns:")
-        print(self.fetchall(
+        result += "\n\nSpecific table 'fips_rutrademark' columns:\n"
+        result += str(self.fetchall(
             """
                 SELECT column_name, data_type FROM information_schema.columns
                 WHERE table_name = 'fips_rutrademark'
             """
         ))
-        print("\nSpecific table 'fips_contact' columns:")
-        print(self.fetchall(
+        result += "\n\nSpecific table 'fips_contact' columns:\n"
+        result += str(self.fetchall(
             """
                 SELECT column_name, data_type FROM information_schema.columns
                 WHERE table_name = 'fips_contact'
             """
         ))
-        print("\nSpecific table 'fips_rutrademark' data:")
-        print(self.fetchall(
+        result += "\n\nSpecific table 'fips_rutrademark' data:\n"
+        result += str(self.fetchall(
             """
                 SELECT * FROM fips_rutrademark LIMIT 1
             """
         ))
-        print("\nSpecific table 'fips_contact' data:")
-        print(self.fetchall(
+        result += "\n\nSpecific table 'fips_contact' data:\n"
+        result += str(self.fetchall(
             """
                 SELECT * FROM fips_contact LIMIT 1
             """
         ))
+        return result
 

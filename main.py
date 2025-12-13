@@ -18,7 +18,9 @@ def main():
         user=config.DB_USER,
         pswd=config.DB_PASS
     )
-    db_connector.print_debug_info()
+    info = db_connector.get_debug_info()
+    with open(config.FILE_DB_DEBUG_INFO, "w") as f:
+        f.write(str(info))
 
     # Initialize class for work filling and validating XML
     xml_gen = XMLGenerator(config.FILE_SCHEMAS_XSD)
