@@ -1,6 +1,7 @@
 from typing import Any, Self
 
 from src.db_connector import DBConnector
+from src.logger import logger
 
 
 class DataTemplateHowToElement:
@@ -37,7 +38,7 @@ class DataTemplateHowToElement:
             WHERE {condition_column} = '{condition_value}'
         """
         data = db_connector.fetchall(req)
-        print("Debug", "to_value\n", data, "\n", req)
+        logger.log("Debug", "to_value\n", data, "\n", req)
         if not data or data[0] is None or data[0][0] is None:
             return None
         data = data[0][0]

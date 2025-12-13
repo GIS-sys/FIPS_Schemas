@@ -2,6 +2,7 @@ import copy
 import json
 import os
 
+from src.logger import logger
 from src.db_connector import DBConnector
 from src.data_template import DataTemplate
 from src.xml_generator import XMLGenerator
@@ -38,30 +39,32 @@ def main():
         data_template_json = json.load(f)
 
     while db_connector.get_last_index() is not None:
+        logger.set_file(config.DATA_FOLDER / f"log.{db_connector.get_last_index()}.txt", clear=True)
         # Main actions:
         # - gather data from the database according to the template
         # - convert the gathered data to XML
         # - validate XML against the XSD schema
         data_template = DataTemplate(copy.deepcopy(data_template_json))
-        print("\nDEBUG Data from template\n", data_template.data, "\n")
+        logger.log("\nDEBUG Data from template\n", data_template.data, "\n")
         last_id = data_template.fill_template(db_connector)
-        print("\nDEBUG Data filled from database\n", data_template.data, "\n")
+        logger.log("\nDEBUG Data filled from database\n", data_template.data, "\n")
         xml_data = xml_gen.json_to_xml(data_template.data)
-        print("\nDEBUG XML", xml_data, "\n")
+        logger.log("\nDEBUG XML", xml_data, "\n")
         validation_result = xml_gen.validate_xml(xml_data)
-        print("XML Validation result:")
+        logger.log("XML Validation result:")
         if validation_result["valid"]:
-            print(f"OK {validation_result["message"]}")
+            logger.log(f"OK {validation_result["message"]}")
             with open(config.DATA_FOLDER / f"{last_id}.xml", "w") as f:
                 f.write(xml_data)
         else:
-            print("Failed!")
-            print("\nErrors:")
+            logger.log("Failed!")
+            logger.log("\nErrors:")
             for error in validation_result["errors"]:
-                print(f"  - {error}")
+                logger.log(f"  - {error}")
         db_connector.mark_last_index(last_id)
+        logger.set_file(None)
 
-    print("\n\n\nEverything was processed")
+    print("Everything was processed")
 
 
 if __name__ == "__main__":

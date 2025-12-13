@@ -51,7 +51,6 @@ class DBConnector:
             ORDER BY appl_receiving_date LIMIT 1
         """
         data = self.fetchall(req)
-        print("TODO", data)
         if not data:
             return None
         return data[0][0]
@@ -92,6 +91,12 @@ class DBConnector:
         result += str(self.fetchall(
             """
                 SELECT * FROM fips_contact LIMIT 1
+            """
+        ))
+        result += f"\n\nAmount of data after {config.MONITOR_STARTING_DATE_VAL}:\n"
+        result += str(self.fetchall(
+            f"""
+                SELECT COUNT(*) FROM fips_rutrademark WHERE ({config.MONITOR_STARTING_DATE_COL} >= '{config.MONITOR_STARTING_DATE_VAL}')
             """
         ))
         return result
