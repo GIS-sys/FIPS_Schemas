@@ -41,9 +41,9 @@ def main():
     # - validate XML against the XSD schema
     data_template = DataTemplate(copy.deepcopy(data_template_json))
     print("DEBUG", data_template.data)
-    json_data = data_template.fill_template(db_connector)
-    print("DEBUG", json_data)
-    xml_data = xml_gen.json_to_xml(json_data)
+    data_template.fill_template(db_connector)
+    print("DEBUG", data_template.data)
+    xml_data = xml_gen.json_to_xml(data_template.data)
     print("DEBUG", xml_data)
     validation_result = xml_gen.validate_xml(xml_data)
     print("DEBUG", validation_result)

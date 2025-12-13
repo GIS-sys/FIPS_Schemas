@@ -35,7 +35,7 @@ class DataTemplateElement:
         data = db_connector.fetchall(
             f"""
                 SELECT {self.howto[0]} FROM {self.howto[1]}
-                WHERE {db_connector.LAST_INDEX.column()} = {ind}
+                WHERE {db_connector.LAST_INDEX.column()} = '{ind}'
             """
         )
         return str(data)
