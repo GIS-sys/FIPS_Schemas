@@ -1,4 +1,4 @@
-__pycache__/
+**/__pycache__/**
 
-data/**
-!data/schemas.xsd
+config.prod.yaml
+

@@ -1,0 +1,5 @@
+host: localhost
+port: 5432
+dbname: fips_test_db
+user: fips_test_user
+password: fips_test_pass

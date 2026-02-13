@@ -1,79 +1,86 @@
- docker run -it -v "$(pwd):/app" -w /app python:3.11 sh -c "pip install psycopg2 tabulate && python analyze.py" > test_analyze.txt
+TODO config.yaml?
 
+# Structure
 
+## main
 
-# TODO add if-else block
+TODO
 
+## test
 
+### Create local database
 
-fips_rutrademark
+- extract original database using get_database_data.py
 
-```
-rutmk_uid: d3d5e534-59b0-3fa1-9a0a-7ba6e4bec660
+- create test database:
 
-appl_receiving_date: 2025-03-04
-
-appl_number: 2025880254
-
-status_date: 2025-03-04
-
-applicants: Дроздов Ярослав Даниилович
-
-applicants_count: 1
-
-goods: бальзам канадский;белила свинцовые;блестки для использования в краске;автобусы;автобусы дальнего следования;автожиры / гирокоптеры;белье купальное [за исключением одежды]
-
-records: Общество с ограниченной ответственностью «Научно-производственное объединение «Медный путь»
-
-ehd_serial: 22474
-
-update_time: 2025-03-04 11:00:46.853000
-
-object_uid: 1c1e5e06-2116-4d00-eb59-08dd57c96be1
-
-doctype: 0
-
-is_artificial: False
-
-is_old: True
-
-feature_category: 550
-
-status_code_st27: A-1-1-W10-W00-X000
-
-mark_category: Service mark
+```bash
+sudo -u postgres psql
 ```
 
+```bash
+-- Create user with password
+CREATE USER fips_test_user WITH PASSWORD 'fips_test_pass';
 
+-- Create database
+CREATE DATABASE fips_test_db OWNER fips_test_user;
 
-fips_contact
+-- Grant all privileges
+GRANT ALL PRIVILEGES ON DATABASE fips_test_db TO fips_test_user;
 
+-- Grant creating database rights
+ALTER USER fips_test_user CREATEDB;
+
+exit
 ```
-contact_uid: 75d826af-e6ff-43cb-95e7-f2ccf34c732b
 
-language_code: ru
+- fill test database with data from original using fill_database_data.py
 
-name: АКЦИОНЕРНОЕ ОБЩЕСТВО "Ярославский завод "СТРОЙТЕХНИКА"
+### Start testing stream
 
-phone: 84852458710
+TODO
 
-email: patent@yartpp.ru
 
-address_text: 150023, г. Ярославль, ул. Гагарина, 64-а
 
-country_code: RU
 
-postal_code: 150023
 
-city_name: Ярославская область
+# TODO
 
-inn: 7605002084
+docker run -it -v "$(pwd):/app" -w /app python:3.11 sh -c "pip install psycopg2 tabulate && python analyze.py" > test_analyze.txt
 
-kio: 760501001
+add if-else block
 
-ogrn: 1027600788511
+```bash
+-- Create tables
+CREATE TABLE table_2col (id SERIAL PRIMARY KEY, name VARCHAR(50) NOT NULL);
+CREATE TABLE table_3col (id SERIAL PRIMARY KEY, product VARCHAR(50) NOT NULL, price DECIMAL(10,2));
+CREATE TABLE table_5col (id SERIAL PRIMARY KEY, first_name VARCHAR(50), last_name VARCHAR(50), email VARCHAR(100), active BOOLEAN DEFAULT true);
 
-ehd_serial: 5
+-- Insert data into table_2col
+INSERT INTO table_2col (name) VALUES ('Alice'), ('Bob'), ('Charlie'), ('Diana'), ('Eve');
 
-update_time: 2022-10-05 00:52:36.906140
+-- Insert data into table_3col
+INSERT INTO table_3col (product, price) VALUES 
+    ('Laptop', 999.99), ('Mouse', 29.99), ('Keyboard', 79.99), 
+    ('Monitor', 299.99), ('Headphones', 89.99), ('Webcam', 69.99), 
+    ('USB Cable', 9.99);
+
+-- Insert data into table_5col
+INSERT INTO table_5col (first_name, last_name, email, active) VALUES 
+    ('John', 'Smith', 'john.smith@email.com', true),
+    ('Jane', 'Doe', 'jane.doe@email.com', true),
+    ('Bob', 'Johnson', 'bob.johnson@email.com', false),
+    ('Alice', 'Williams', 'alice.w@email.com', true),
+    ('Charlie', 'Brown', 'charlie.b@email.com', true),
+    ('Diana', 'Prince', 'diana.p@email.com', true),
+    ('Evan', 'Davis', 'evan.d@email.com', false),
+    ('Fiona', 'Garcia', 'fiona.g@email.com', true);
+
+-- Verify the data
+SELECT 'table_2col' as table_name, count(*) as rows FROM table_2col
+UNION ALL
+SELECT 'table_3col', count(*) FROM table_3col
+UNION ALL
+SELECT 'table_5col', count(*) FROM table_5col;
 ```
+
