@@ -119,7 +119,7 @@ class DataTemplate:
     @staticmethod
     def create_example_json() -> dict[str, Any]:
         example_data = {
-            "@env": "EPGU",
+            "@env": "SVCDEV",  # SVCDEV/EPGU/ERUL
             "CreateOrdersRequest": {
                 "orders": {
                     "order": [{
@@ -156,18 +156,20 @@ class DataTemplate:
                                         DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.split(' ')[2]"),
                                     ]
                                 ).to_dict(),
-                                "citizenship": "1"
+                                "citizenship": "1",
                             }
                         },
-                        "senderInn": DataTemplateElement(
-                            example="1234567890",
-                            howto=[
-                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark"),
-                                DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="name"),
-                            ]
-                        ).to_dict(),
-                        "serviceTargetCode": "12345678901234567890",
-                        "userSelectedRegion": "45000000",
+                        # "senderInn": DataTemplateElement(
+                        #     example="1234567890",
+                        #     howto=[
+                        #         DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark"),
+                        #         DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="name"),
+                        #     ]
+                        # ).to_dict(),
+                        "senderKpp": "773001001",
+                        "senderInn": "7730176088",
+                        "serviceTargetCode": "60012726",
+                        "userSelectedRegion": "00000000",
                         "orderNumber": DataTemplateElement(
                             example="2025933465",
                             howto=[
@@ -181,13 +183,14 @@ class DataTemplate:
                             ]
                         ).to_dict(),
                         "OfficeInfo": {
-                            "OfficeName": "ФИПС",
-                            "ApplicationAcceptance": "1"
+                            "OfficeName": "Федеральная служба по интеллектуальной собственности",
+                            "OfficeAdress": "121059, г. Москва, наб Бережковская, д. 30, к. 1",
+                            "OfficeFrguCode": "0000000075",
+                            "ApplicationAcceptance": "-1",
                         },
                         "statusHistoryList": {
                             "statusHistory": [{
                                 "status": "-1",
-                                "IsInformed": "false",
                                 "statusDate": DataTemplateElement(
                                     example="2025-12-12T10:32:23.042643",
                                     howto=[
@@ -195,8 +198,9 @@ class DataTemplate:
                                         DataTemplateHowToElement(column_name="CreatedDate", table_name="Objects", condition_column="Number"),
                                     ]
                                 ).to_dict(),
+                                "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
                             }]
-                        }
+                        },
                     }]
                 }
             }
