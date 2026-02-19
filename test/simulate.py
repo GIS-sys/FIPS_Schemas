@@ -187,6 +187,7 @@ def op_add_base(cursor):
     contact['language_code'] = 'ru'
     contact['update_time'] = now()
     contact['delete_time'] = None
+    contact = {k: v for k, v in contact.items() if v is not None}
     # Keep other fields as in template
 
     # 5. Build contact-trademark connection row
