@@ -22,13 +22,13 @@ class DBIndexTrackProcessed:
 
 
 class DBConnector:
-    def __init__(self, host: str, port: int, name: str, user: str, pswd: str):
+    def __init__(self, host: str, port: int, dbname: str, user: str, password: str):
         self.conn = psycopg2.connect(
             host=host,
             port=port,
-            database=name,
+            database=dbname,
             user=user,
-            password=pswd,
+            password=password,
         )
         self.index_track = DBIndexTrackProcessed()
 
@@ -38,11 +38,31 @@ class DBConnector:
     def __del__(self):
         self.conn.close()
 
-    def fetchall(self, request: str) -> list:
+    def fetchall(self, request: str, params: tuple = None) -> list:
         with self.conn.cursor() as cur:
-            cur.execute(request)
+            if params:
+                cur.execute(request, params)
+            else:
+                cur.execute(request)
             data = cur.fetchall()
         return data
+
+    def get_kinds_for_object_parent(self, rutmk_uid: str) -> list[int]:
+        """
+        Given a rutmk_uid, return all Kind values from the Objects table
+        that share the same Parent as the object linked to this rutmk_uid.
+        """
+        query = """
+            WITH obj AS (
+                SELECT object_uid FROM fips_rutrademark WHERE rutmk_uid = %s
+            )
+            SELECT o2.Kind
+            FROM Objects o1
+            JOIN Objects o2 ON o1.Parent = o2.Parent
+            WHERE o1.Number = (SELECT object_uid FROM obj)
+        """
+        rows = self.fetchall(query, (rutmk_uid,))
+        return [row[0] for row in rows]
 
     def get_last_index(self):
         req = f"""

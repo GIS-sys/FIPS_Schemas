@@ -111,8 +111,9 @@ class DataTemplate:
                 for args in self.iterate(data[k]):
                     yield args
 
-    def fill_template(self, db_connector: DBConnector) -> Any:
-        ind = db_connector.get_last_index()
+    def fill_template(self, db_connector: DBConnector, ind: Any = None) -> Any:
+        if ind is None:
+            ind = db_connector.get_last_index()
         for root, key in self.elements:
             root[key] = root[key].to_value(db_connector, ind)
         return ind

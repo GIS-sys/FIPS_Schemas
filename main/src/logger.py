@@ -8,10 +8,10 @@ class Logger:
             with open(self.path, "w"):
                 pass
 
-    def log(self, *args):
-        if self.path is None:
+    def log(self, *args, force_print=False):
+        if self.path is None or force_print:
             print(*args)
-        else:
+        if self.path is not None:
             with open(self.path, "a") as f:
                 for arg in args:
                     f.write(str(arg) + "\n")
