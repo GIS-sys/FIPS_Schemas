@@ -51,6 +51,7 @@ def main():
 
         # ----- Step 2: process records with status NEW or FORM_FAIL -----
         for uid, rec in tracker.get_records_by_status("NEW", "FORM_FAIL"):
+            print("=" * 16)
             print(f"Tracking {uid} status={rec['status']}")
             logger.set_file(config.DATA_FOLDER / f"log.{uid}.txt", clear=True)
             try:
@@ -69,7 +70,7 @@ def main():
                 # Validate against XSD
                 validation_result = xml_gen.validate_xml(xml_data)
                 if validation_result.get("valid"):
-                    tracker.update_record(uid, status="FORM_SUCC", path_to_xml=str(xml_path))
+                    tracker.update_record(uid, status="FORM_SUCC", path_to_xml=str(xml_path), error_text=None)
                     logger.log(f"XML generated and validated for {uid}", force_print=True)
                 else:
                     error_msg = validation_result.get("message") or \
@@ -85,15 +86,24 @@ def main():
 
         # ----- Step 3: check FORM_SUCC records for Kind = 150002 -----
         for uid, rec in tracker.get_records_by_status("FORM_SUCC"):
+            print("=" * 16)
+            print(f"Tracking {uid} status={rec['status']}")
             try:
                 kinds = db_connector.get_kinds_for_object_parent(uid)
-                if 150002 in kinds:
+                if "150002" in kinds:
                     tracker.update_record(uid, status="150002")
-                    logger.log(f"Record {uid} has Kind=150002, status updated.")
+                    logger.log(f"Record {uid} has Kind=150002, status updated.", force_print=True)
+                else:
+                    logger.log(f"Record {uid} DOESN'T have Kind=150002, skipping.", force_print=True)
             except Exception as e:
                 # Log error but do not change status – will be retried next cycle?
                 # Here we simply log it; you might want to set a temporary error field.
-                logger.log(f"Error checking Kind for {uid}: {e}")
+                logger.log(f"Error checking Kind for {uid}: {e}", force_print=True)
+
+        # ----- Step 4: check FORM_SUCC records for Kind = 150002 -----
+        for uid, rec in tracker.get_records_by_status("150002"):
+            print("=" * 16)
+            print(f"NEED TO SEND {rec['path_to_xml']}")
 
         # Wait before next iteration
         print("Scan finished\n\n\n")

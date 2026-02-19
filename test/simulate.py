@@ -33,7 +33,6 @@ SEARCH_ATTRIBUTES_SAMPLES = load_csv_to_dict_list('SearchAttributes.csv')
 
 
 # ========== Global state (in‑memory) ==========
-ROOT_OBJECT_UUID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
 ALPHABET = "qwertyuiopasdfghjklzxcvbnm"
 
 # Trademarks added during this session
@@ -41,8 +40,8 @@ added_trademarks = []  # each is dict of rows
 added_objects = []  # each is a row
 
 # ========== Helpers ==========
-def random_word(length: int = 5) -> str:
-    return "".join([random.choice(ALPHABET) for _ in range(length)])
+def random_word(length: int = 5, alphabet=ALPHABET) -> str:
+    return "".join([random.choice(alphabet) for _ in range(length)])
 
 def now():
     """Current timestamp in ISO format."""
@@ -69,6 +68,16 @@ def insert_dict(cursor, table: str, data: dict):
         sql.SQL(', ').join(sql.Placeholder() * len(columns))
     )
     cursor.execute(query, values)
+
+def get_inn_for_type(t: str) -> str:
+    digits = "123456789"
+    if t == "FL":
+        return random_word(12, digits)
+    if t == "UL":
+        return random_word(10, digits)
+    if t == "IP":
+        return random_word(12, digits)
+    raise Exveption(f"get_inn_for_type expected t in [FL, UL, IP], got {t}")
 
 def list_choices(items, display_func):
     """Print enumerated list of items and return a dict mapping index->item."""
@@ -143,6 +152,7 @@ def op_add_base(cursor):
     contact['contact_uid'] = new_contact_uid
     contact['name'] = new_applicant_name
     contact['contact_type'] = new_applicant_type
+    contact['inn'] = get_inn_for_type(new_applicant_type)
     contact['language_code'] = 'ru'
     contact['update_time'] = now()
     contact['delete_time'] = None

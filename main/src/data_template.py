@@ -34,8 +34,8 @@ class DataTemplateHowToElement:
     def to_value(self, db_connector: DBConnector, condition_value: Any):
         condition_column = (self.condition_column if self.condition_column is not None else db_connector.get_index_column_name())
         req = f"""
-            SELECT {self.column_name} FROM {self.table_name}
-            WHERE {condition_column} = '{condition_value}'
+            SELECT "{self.column_name}" FROM "{self.table_name}"
+            WHERE "{condition_column}" = '{condition_value}'
         """
         data = db_connector.fetchall(req)
         logger.log("Debug", "to_value\n", data, "\n", req)
@@ -111,9 +111,7 @@ class DataTemplate:
                 for args in self.iterate(data[k]):
                     yield args
 
-    def fill_template(self, db_connector: DBConnector, ind: Any = None) -> Any:
-        if ind is None:
-            ind = db_connector.get_last_index()
+    def fill_template(self, db_connector: DBConnector, ind: Any) -> Any:
         for root, key in self.elements:
             root[key] = root[key].to_value(db_connector, ind)
         return ind
@@ -134,12 +132,12 @@ class DataTemplate:
                                         DataTemplateHowToElement(column_name="appl_number", table_name="fips_rutrademark"),
                                     ]
                                 ).to_dict(),
-                                "fullName": DataTemplateElement(
-                                    example="ООО АБВ",
-                                    howto=[
-                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark"),
-                                    ]
-                                ).to_dict(),
+                                #"fullName": DataTemplateElement(
+                                #    example="ООО АБВ",
+                                #    howto=[
+                                #        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark"),
+                                #    ]
+                                #).to_dict(),
                                 "lastName": DataTemplateElement(
                                     example="Иванов",
                                     howto=[
@@ -186,6 +184,19 @@ class DataTemplate:
                             "OfficeName": "ФИПС",
                             "ApplicationAcceptance": "1"
                         },
+                        "statusHistoryList": {
+                            "statusHistory": [{
+                                "status": "-1",
+                                "IsInformed": "false",
+                                "statusDate": DataTemplateElement(
+                                    example="2025-12-12T10:32:23.042643",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="CreatedDate", table_name="Objects", condition_column="Number"),
+                                    ]
+                                ).to_dict(),
+                            }]
+                        }
                     }]
                 }
             }

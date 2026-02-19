@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List, Optional, Any
+from typing import Optional, Any
 
 
 class RecordTracker:
@@ -8,9 +8,9 @@ class RecordTracker:
 
     def __init__(self, file_path: str):
         self.file_path = file_path
-        self.data: Dict[str, Dict[str, Any]] = self._load()
+        self.data: dict[str, dict[str, Any]] = self._load()
 
-    def _load(self) -> Dict[str, Dict[str, Any]]:
+    def _load(self) -> dict[str, dict[str, Any]]:
         if os.path.exists(self.file_path):
             with open(self.file_path, 'r') as f:
                 return json.load(f)
@@ -47,7 +47,7 @@ class RecordTracker:
                 self.data[uid] = {"status": "NEW"}
         self.save()
 
-    def get_records_by_status(self, *statuses: str) -> List[tuple]:
+    def get_records_by_status(self, *statuses: str) -> list[tuple]:
         """Return list of (uid, record) for records whose status is in statuses."""
         result = []
         for uid, rec in self.data.items():
@@ -60,5 +60,6 @@ class RecordTracker:
         if uid not in self.data:
             self.data[uid] = {}
         self.data[uid].update(kwargs)
+        self.data[uid] = {k: v for k, v in self.data[uid].items() if v is not None}
         self.save()
 

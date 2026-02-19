@@ -56,24 +56,13 @@ class DBConnector:
             WITH obj AS (
                 SELECT object_uid FROM fips_rutrademark WHERE rutmk_uid = %s
             )
-            SELECT o2.Kind
-            FROM Objects o1
-            JOIN Objects o2 ON o1.Parent = o2.Parent
-            WHERE o1.Number = (SELECT object_uid FROM obj)
+            SELECT o2."Kind"
+            FROM "Objects" o1
+            JOIN "Objects" o2 ON o1."ParentNumber" = o2."ParentNumber"
+            WHERE o1."Number" = (SELECT object_uid FROM obj)
         """
         rows = self.fetchall(query, (rutmk_uid,))
-        return [row[0] for row in rows]
-
-    def get_last_index(self):
-        req = f"""
-            SELECT {self.index_track.column()} FROM fips_rutrademark
-            WHERE ({config.MONITOR_STARTING_DATE_COL} >= '{config.MONITOR_STARTING_DATE_VAL}') AND {self.index_track.where()}
-            ORDER BY appl_receiving_date LIMIT 1
-        """
-        data = self.fetchall(req)
-        if not data:
-            return None
-        return data[0][0]
+        return [str(row[0]) for row in rows]
 
     def mark_last_index(self, last_id):
         self.index_track.add(last_id)
