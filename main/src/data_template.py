@@ -171,38 +171,21 @@ class DataTemplate:
                         "serviceTargetCode": "12345678901234567890",
                         "userSelectedRegion": "45000000",
                         "orderNumber": DataTemplateElement(
-                            example="31d4ec1a-43b3-4ade-bce8-eb3df9e6e940",
+                            example="2025933465",
                             howto=[
-                                DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                DataTemplateHowToElement(column_name="appl_number", table_name="fips_rutrademark"),
                             ]
                         ).to_dict(),
                         "requestDate": DataTemplateElement(
                             example="2025-12-12T10:31:23.042643",
                             howto=[
-                                DataTemplateHowToElement(column_name="appl_receiving_date", table_name="fips_rutrademark"),
+                                DataTemplateHowToElement(column_name="appl_receiving_date", table_name="fips_rutrademark", after="x + 'T12:00:00.000000'"),
                             ]
                         ).to_dict(),
                         "OfficeInfo": {
                             "OfficeName": "ФИПС",
                             "ApplicationAcceptance": "1"
                         },
-                        "statusHistoryList": {
-                            "statusHistory": [{
-                                "status": DataTemplateElement(
-                                    example="A-1-1-W10-W00-X000",
-                                    howto=[
-                                        DataTemplateHowToElement(column_name="status_code_st27", table_name="fips_rutrademark"),
-                                    ]
-                                ).to_dict(),
-                                "IsInformed": "false",
-                                "statusDate": DataTemplateElement(
-                                    example="2025-12-12T10:32:23.042643",
-                                    howto=[
-                                        DataTemplateHowToElement(column_name="status_date", table_name="fips_rutrademark"),
-                                    ]
-                                ).to_dict(),
-                            }]
-                        }
                     }]
                 }
             }
