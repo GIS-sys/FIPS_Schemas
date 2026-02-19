@@ -34,6 +34,7 @@ SEARCH_ATTRIBUTES_SAMPLES = load_csv_to_dict_list('SearchAttributes.csv')
 
 # ========== Global state (in‑memory) ==========
 ALPHABET = "qwertyuiopasdfghjklzxcvbnm"
+DIGITS_NO_ZERO = "123456789"
 
 # Trademarks added during this session
 added_trademarks = []  # each is dict of rows
@@ -69,14 +70,22 @@ def insert_dict(cursor, table: str, data: dict):
     )
     cursor.execute(query, values)
 
+def get_ogrn() -> str:
+    return random_word(13, DIGITS_NO_ZERO)
+
+def get_kpp() -> str:
+    return random_word(9, DIGITS_NO_ZERO)
+
+def get_snils() -> str:
+    return random_word(11, DIGITS_NO_ZERO)
+
 def get_inn_for_type(t: str) -> str:
-    digits = "123456789"
     if t == "FL":
-        return random_word(12, digits)
+        return random_word(12, DIGITS_NO_ZERO)
     if t == "UL":
-        return random_word(10, digits)
+        return random_word(10, DIGITS_NO_ZERO)
     if t == "IP":
-        return random_word(12, digits)
+        return random_word(12, DIGITS_NO_ZERO)
     raise Exveption(f"get_inn_for_type expected t in [FL, UL, IP], got {t}")
 
 def list_choices(items, display_func):
@@ -99,6 +108,12 @@ def select_from_list(prompt: str, items, display_func = str):
         if inp in choices:
             return choices[inp]
         print("Invalid selection. Try again.")
+
+def select_binary(prompt: str) -> bool:
+    """
+    Returns True if yes, False if No
+    """
+    return select_from_list(prompt, ["Нет", "Да"]) == "Да"
 
 
 
@@ -124,16 +139,20 @@ def op_add_base(cursor):
     new_contact_uid = new_uuid()
     new_object_uid = new_uuid()
     new_object_parent_uid = new_uuid()
-    new_applicant_type = select_from_list("Enter contact_type: ", ["FL", "UL", "IP"])
-    if new_applicant_type == "FL":
-        new_applicant_name = f"{random_word()} {random_word()} {random_word()}"
-    elif new_applicant_type == "UL":
-        new_applicant_name = f"ООО {random_word()}"
-    elif new_applicant_type == "IP":
-        name_prefix = select_from_list("Select name prefix: ", ["ИП", "Индивидуальный предприниматель", ""])
-        new_applicant_name = f"{name_prefix} {random_word()} {random_word()} {random_word()}"
+    new_applicant_type_str = select_from_list("Enter contact_type: ", ["FL", "UL", "IP"])
+    new_applicant_type_int = ["FL", "UL", "IP"].index(new_applicant_type_str)
+    if select_binary("Want to enter applicant name yourself?"):
+        new_applicant_name = input("name: ")
     else:
-        raise Exception(f"Unknown {new_applicant_type=}")
+        if new_applicant_type_str == "FL":
+            new_applicant_name = f"{random_word()} {random_word()} {random_word()}"
+        elif new_applicant_type_str == "UL":
+            new_applicant_name = f"ООО {random_word()}"
+        elif new_applicant_type_str == "IP":
+            name_prefix = select_from_list("Select name prefix: ", ["ИП", "Индивидуальный предприниматель", ""])
+            new_applicant_name = f"{name_prefix} {random_word()} {random_word()} {random_word()}"
+        else:
+            raise Exception(f"Unknown {new_applicant_type_str=}")
 
     # 3. Build trademark row (copy most fields, override a few)
     trademark = template_rutrademark.copy()
@@ -152,12 +171,29 @@ def op_add_base(cursor):
     contact = template_contact.copy()
     contact['contact_uid'] = new_contact_uid
     contact['name'] = new_applicant_name
-    contact['contact_type'] = new_applicant_type
-    contact['inn'] = get_inn_for_type(new_applicant_type)
+    contact['contact_type'] = new_applicant_type_int
+    if new_applicant_type_str == "FL":
+        contact['snils'] = get_snils() if select_binary("Add СНИЛС? ") else None
+        contact['inn'] = get_inn_for_type(new_applicant_type_str) if select_binary("Add ИНН? ") else None
+    elif new_applicant_type_str == "UL":
+        contact['ogrn'] = get_ogrn() if select_binary("Add ОГРН? ") else None
+        contact['inn'] = get_inn_for_type(new_applicant_type_str) if select_binary("Add ИНН? ") else None
+        contact['customer_number'] = get_kpp() if select_binary("Add КПП? ") else None
+    elif new_applicant_type_str == "IP":
+        contact['ogrn'] = get_ogrn() if select_binary("Add ОГРН? ") else None
+        contact['inn'] = get_inn_for_type(new_applicant_type_str) if select_binary("Add ИНН? ") else None
+    else:
+        raise Exception(f"Unknown {new_applicant_type_str=}")
     contact['language_code'] = 'ru'
     contact['update_time'] = now()
     contact['delete_time'] = None
     # Keep other fields as in template
+
+    # 5. Build contact-trademark connection row
+    rutmkapplicant = {
+        'contact_uid': new_contact_uid,
+        'rutmk_uid': new_trademark_uid,
+    }
 
     # 5. Build object row
     obj = template_object.copy()
@@ -173,6 +209,7 @@ def op_add_base(cursor):
         insert_dict(cursor, 'fips_rutrademark', trademark)
         insert_dict(cursor, 'fips_contact', contact)
         insert_dict(cursor, 'Objects', obj)
+        insert_dict(cursor, 'fips_rutmkapplicant', rutmkapplicant)
         print(f"✅ Added trademark {new_trademark_uid} (applicant: {new_applicant_name})")
         print(f"✅ Added contact {new_contact_uid} for this applicant")
         print(f"✅ Added object {new_object_uid} for this trademark (parent: {new_object_parent_uid})")
