@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Self
 
 from src.db_connector import DBConnector
@@ -46,8 +47,8 @@ class DataTemplateHowToElement:
             try:
                 foo = eval(f"lambda x: ({self.after})")
                 data = foo(data)
-            except Exception as e:
-                logger.log(f"\nERROR: {e}")
+            except Exception:
+                logger.log(f"\nERROR: {traceback.format_exc()}")
                 return None
         return data
 
@@ -124,48 +125,129 @@ class DataTemplate:
                 "orders": {
                     "order": [{
                         "user": {
-                            "userPersonalDoc": {
-                                "PersonalDocType": "1",
-                                "number": DataTemplateElement(
-                                    example="1234567890",
+                            "userDocSnils": {
+                                "snils": DataTemplateElement(
+                                    example="12345678900",
                                     howto=[
-                                        DataTemplateHowToElement(column_name="appl_number", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                        DataTemplateHowToElement(column_name="snils", table_name="fips_contact", condition_column="contact_uid", after="''.join(c for c in str(x) if c in '1234567890')"),
                                     ]
                                 ).to_dict(),
-                                #"fullName": DataTemplateElement(
-                                #    example="ООО АБВ",
-                                #    howto=[
-                                #        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark"),
-                                #    ]
-                                #).to_dict(),
                                 "lastName": DataTemplateElement(
                                     example="Иванов",
                                     howto=[
-                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.split(' ')[0]"),
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.strip().split(' ')[0]"),
                                     ]
                                 ).to_dict(),
                                 "firstName": DataTemplateElement(
                                     example="Иван",
                                     howto=[
-                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.split(' ')[1]"),
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.strip().split(' ')[1]"),
                                     ]
                                 ).to_dict(),
                                 "middleName": DataTemplateElement(
                                     example="Иванович",
                                     howto=[
-                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.split(' ')[2]"),
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.strip().split(' ')[2]"),
                                     ]
                                 ).to_dict(),
-                                "citizenship": "1",
-                            }
+                                "citizenship": "0",
+                            },
+                            "userDocInn": {
+                                "INN": DataTemplateElement(
+                                    example="123456789000",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                        DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="contact_uid"),
+                                    ]
+                                ).to_dict(),
+                                "lastName": DataTemplateElement(
+                                    example="Иванов",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.strip().split(' ')[0]"),
+                                    ]
+                                ).to_dict(),
+                                "firstName": DataTemplateElement(
+                                    example="Иван",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.strip().split(' ')[1]"),
+                                    ]
+                                ).to_dict(),
+                                "middleName": DataTemplateElement(
+                                    example="Иванович",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.strip().split(' ')[2]"),
+                                    ]
+                                ).to_dict(),
+                                "citizenship": "0",
+                            },
                         },
-                        # "senderInn": DataTemplateElement(
-                        #     example="1234567890",
-                        #     howto=[
-                        #         DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark"),
-                        #         DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="name"),
-                        #     ]
-                        # ).to_dict(),
+                        "organization": {
+                            "ogrn_inn_IP": {
+                                "ogrn": DataTemplateElement(
+                                    example="1234567890000",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                        DataTemplateHowToElement(column_name="ogrn", table_name="fips_contact", condition_column="contact_uid"),
+                                    ]
+                                ).to_dict(),
+                                "inn": DataTemplateElement(
+                                    example="123456789000",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                        DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="contact_uid"),
+                                    ]
+                                ).to_dict(),
+                                "lastName": DataTemplateElement(
+                                    example="Иванов",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().startswith('ИП ') else (x.strip()[31:] if x.strip().startswith('Индивидуальный предприниматель ') else x.strip())).split(' ')[0]"),
+                                    ]
+                                ).to_dict(),
+                                "firstName": DataTemplateElement(
+                                    example="Иван",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().startswith('ИП ') else (x.strip()[31:] if x.strip().startswith('Индивидуальный предприниматель ') else x.strip())).split(' ')[1]"),
+                                    ]
+                                ).to_dict(),
+                                "middleName": DataTemplateElement(
+                                    example="Иванович",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().startswith('ИП ') else (x.strip()[31:] if x.strip().startswith('Индивидуальный предприниматель ') else x.strip())).split(' ')[2]"),
+                                    ]
+                                ).to_dict(),
+                            },
+                            "ogrn_inn_UL": {
+                                "ogrn": DataTemplateElement(
+                                    example="1234567890000",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                        DataTemplateHowToElement(column_name="ogrn", table_name="fips_contact", condition_column="contact_uid"),
+                                    ]
+                                ).to_dict(),
+                                "inn": DataTemplateElement(
+                                    example="1234567890",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                        DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="contact_uid"),
+                                    ]
+                                ).to_dict(),
+                                "kpp": DataTemplateElement(
+                                    example="123456789",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                        DataTemplateHowToElement(column_name="customer_number", table_name="fips_contact", condition_column="contact_uid"),
+                                    ]
+                                ).to_dict(),
+                            },
+                        },
                         "senderKpp": "773001001",
                         "senderInn": "7730176088",
                         "serviceTargetCode": "60012726",

@@ -130,7 +130,8 @@ def op_add_base(cursor):
     elif new_applicant_type == "UL":
         new_applicant_name = f"ООО {random_word()}"
     elif new_applicant_type == "IP":
-        new_applicant_name = f"ИП {random_word()} {random_word()} {random_word()}"
+        name_prefix = select_from_list("Select name prefix: ", ["ИП", "Индивидуальный предприниматель", ""])
+        new_applicant_name = f"{name_prefix} {random_word()} {random_word()} {random_word()}"
     else:
         raise Exception(f"Unknown {new_applicant_type=}")
 

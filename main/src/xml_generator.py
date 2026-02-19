@@ -14,7 +14,7 @@ class XMLGenerator:
             try:
                 self.schema = xmlschema.XMLSchema(xsd_path)
             except Exception as e:
-                print(f"Warning: Could not load XSD schema: {e}")
+                raise Exception(f"Could not load XSD schema")
 
     def _create_element_with_ns(self, tag: str, text: str = None,
                                attributes: dict[str, str] = None) -> ET.Element:
@@ -80,8 +80,7 @@ class XMLGenerator:
             return xml_pretty
 
         except Exception as e:
-            print(f"Error creating XML file: {e}")
-            return ""
+            raise Exception(f"Error creating XML file")
 
     def _prettify_xml(self, xml_string: str) -> str:
         try:

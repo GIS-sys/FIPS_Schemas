@@ -2,6 +2,7 @@ import copy
 import json
 import os
 import time
+import traceback
 
 from src.logger import logger
 from src.db_connector import DBConnector
@@ -80,7 +81,7 @@ def main():
 
             except Exception as e:
                 tracker.update_record(uid, status="FORM_FAIL", error_text=str(e))
-                logger.log(f"Exception while processing {uid}: {e}", force_print=True)
+                logger.log(f"Exception while processing {uid}:\n{traceback.format_exc()}", force_print=True)
 
             logger.set_file(None)   # close per‑record log
 
@@ -95,10 +96,10 @@ def main():
                     logger.log(f"Record {uid} has Kind=150002, status updated.", force_print=True)
                 else:
                     logger.log(f"Record {uid} DOESN'T have Kind=150002, skipping.", force_print=True)
-            except Exception as e:
+            except Exception:
                 # Log error but do not change status – will be retried next cycle?
                 # Here we simply log it; you might want to set a temporary error field.
-                logger.log(f"Error checking Kind for {uid}: {e}", force_print=True)
+                logger.log(f"Error checking Kind for {uid}:\n{traceback.format_exc()}", force_print=True)
 
         # ----- Step 4: check FORM_SUCC records for Kind = 150002 -----
         for uid, rec in tracker.get_records_by_status("150002"):

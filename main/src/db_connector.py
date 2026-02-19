@@ -23,14 +23,15 @@ class DBIndexTrackProcessed:
 
 class DBConnector:
     def __init__(self, host: str, port: int, dbname: str, user: str, password: str):
-        self.conn = psycopg2.connect(
-            host=host,
-            port=port,
-            database=dbname,
-            user=user,
-            password=password,
-        )
+        self.args = {"host": host, "port": port, "dbname": dbname, "user": user, "password": password}
+        self.conn = None
+        self.reconnect()
         self.index_track = DBIndexTrackProcessed()
+
+    def reconnect(self):
+        if self.conn:
+            self.conn.close()
+        self.conn = psycopg2.connect(**self.args)
 
     def get_index_column_name(self) -> str:
         return self.index_track.column()
@@ -39,13 +40,18 @@ class DBConnector:
         self.conn.close()
 
     def fetchall(self, request: str, params: tuple = None) -> list:
-        with self.conn.cursor() as cur:
-            if params:
-                cur.execute(request, params)
-            else:
-                cur.execute(request)
-            data = cur.fetchall()
-        return data
+        try:
+            with self.conn.cursor() as cur:
+                if params:
+                    cur.execute(request, params)
+                else:
+                    cur.execute(request)
+                data = cur.fetchall()
+            return data
+        except Exception:
+            print("fetchall error:", request, params)
+            self.reconnect()
+            raise
 
     def get_kinds_for_object_parent(self, rutmk_uid: str) -> list[int]:
         """
