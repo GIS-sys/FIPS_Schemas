@@ -54,9 +54,10 @@ class DataTemplateHowToElement:
 
 
 class DataTemplateElement:
-    def __init__(self, example: str, howto: list[DataTemplateHowToElement]):
+    def __init__(self, example: str, howto: list[DataTemplateHowToElement], after: str = None):
         self.example = example
         self.howto = howto
+        self.after = after
 
     @staticmethod
     def from_dict_able(obj: dict) -> bool:
@@ -67,6 +68,7 @@ class DataTemplateElement:
             "_DataTemplateElement_": {
                 "example": self.example,
                 "howto": [howto_el.to_dict() for howto_el in self.howto],
+                "after": self.after,
             }
         }
 
@@ -76,6 +78,7 @@ class DataTemplateElement:
         dte = DataTemplateElement(
             example=obj["example"],
             howto=[DataTemplateHowToElement.from_dict(howto_el) for howto_el in obj["howto"]],
+            after=obj.get("after", None),
         )
         return dte
 
@@ -88,7 +91,15 @@ class DataTemplateElement:
         for howto_el in self.howto:
             data = howto_el.to_value(db_connector, last_result)
             last_result = data
-        return str(last_result)
+        data = last_result
+        if self.after is not None:
+            try:
+                foo = eval(f"lambda x: ({self.after})")
+                data = foo(data)
+            except Exception:
+                logger.log(f"\nERROR: {traceback.format_exc()}")
+                return None
+        return str(data)
 
 
 class ConditionalElement:
@@ -299,7 +310,8 @@ class DataTemplate:
                                             example="Иванович",
                                             howto=[
                                                 DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.strip().split(' ')[2]"),
-                                            ]
+                                            ],
+                                            after="'' if x is None else x"
                                         ).to_dict(),
                                         "citizenship": "0",
                                     },
@@ -336,7 +348,8 @@ class DataTemplate:
                                             example="Иванович",
                                             howto=[
                                                 DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.strip().split(' ')[2]"),
-                                            ]
+                                            ],
+                                            after="'' if x is None else x"
                                         ).to_dict(),
                                         "citizenship": "0",
                                     },
@@ -391,7 +404,8 @@ class DataTemplate:
                                             example="Иванович",
                                             howto=[
                                                 DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().lower().startswith('ип ') else (x.strip()[31:] if x.strip().lower().startswith('индивидуальный предприниматель ') else x.strip())).split(' ')[2]"),
-                                            ]
+                                            ],
+                                            after="'' if x is None else x"
                                         ).to_dict(),
                                     },
                                 ).to_dict(),
