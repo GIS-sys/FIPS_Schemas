@@ -378,19 +378,19 @@ class DataTemplate:
                                         "lastName": DataTemplateElement(
                                             example="Иванов",
                                             howto=[
-                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().startswith('ИП ') else (x.strip()[31:] if x.strip().startswith('Индивидуальный предприниматель ') else x.strip())).split(' ')[0]"),
+                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().lower().startswith('ип ') else (x.strip()[31:] if x.strip().lower().startswith('индивидуальный предприниматель ') else x.strip())).split(' ')[0]"),
                                             ]
                                         ).to_dict(),
                                         "firstName": DataTemplateElement(
                                             example="Иван",
                                             howto=[
-                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().startswith('ИП ') else (x.strip()[31:] if x.strip().startswith('Индивидуальный предприниматель ') else x.strip())).split(' ')[1]"),
+                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().lower().startswith('ип ') else (x.strip()[31:] if x.strip().lower().startswith('индивидуальный предприниматель ') else x.strip())).split(' ')[1]"),
                                             ]
                                         ).to_dict(),
                                         "middleName": DataTemplateElement(
                                             example="Иванович",
                                             howto=[
-                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().startswith('ИП ') else (x.strip()[31:] if x.strip().startswith('Индивидуальный предприниматель ') else x.strip())).split(' ')[2]"),
+                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().lower().startswith('ип ') else (x.strip()[31:] if x.strip().lower().startswith('индивидуальный предприниматель ') else x.strip())).split(' ')[2]"),
                                             ]
                                         ).to_dict(),
                                     },
@@ -407,7 +407,7 @@ class DataTemplate:
                                             howto=[
                                                 DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                                 DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
-                                                DataTemplateHowToElement(column_name="snils", table_name="fips_contact", condition_column="contact_uid", after="''.join(c for c in str(x) if c in '1234567890')"),
+                                                DataTemplateHowToElement(column_name="ogrn", table_name="fips_contact", condition_column="contact_uid", after="''.join(c for c in str(x) if c in '1234567890')"),
                                             ],
                                             condition_value_empty=False,
                                             result=DataTemplateElement(
@@ -419,37 +419,31 @@ class DataTemplate:
                                                 ]
                                             ).to_dict(),
                                         ).to_dict(),
-                                        "inn": ConditionalElement(
+                                        "inn_kpp": ConditionalElement(
                                             howto=[
                                                 DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                                 DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
                                                 DataTemplateHowToElement(column_name="ogrn", table_name="fips_contact", condition_column="contact_uid", after="''.join(c for c in str(x) if c in '1234567890')"),
                                             ],
                                             condition_value_empty=True,
-                                            result=DataTemplateElement(
-                                                example="1234567890",
-                                                howto=[
-                                                    DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
-                                                    DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
-                                                    DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="contact_uid"),
-                                                ]
-                                            ).to_dict(),
-                                        ).to_dict(),
-                                        "kpp": ConditionalElement(
-                                            howto=[
-                                                DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
-                                                DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
-                                                DataTemplateHowToElement(column_name="ogrn", table_name="fips_contact", condition_column="contact_uid", after="''.join(c for c in str(x) if c in '1234567890')"),
-                                            ],
-                                            condition_value_empty=True,
-                                            result=DataTemplateElement(
-                                                example="123456789",
-                                                howto=[
-                                                    DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
-                                                    DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
-                                                    DataTemplateHowToElement(column_name="customer_number", table_name="fips_contact", condition_column="contact_uid"),
-                                                ]
-                                            ).to_dict(),
+                                            result={
+                                                "inn": DataTemplateElement(
+                                                    example="1234567890",
+                                                    howto=[
+                                                        DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                                        DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                                        DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="contact_uid"),
+                                                    ]
+                                                ).to_dict(),
+                                                "kpp": DataTemplateElement(
+                                                    example="123456789",
+                                                    howto=[
+                                                        DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                                        DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                                        DataTemplateHowToElement(column_name="customer_number", table_name="fips_contact", condition_column="contact_uid"),
+                                                    ]
+                                                ).to_dict(),
+                                            },
                                         ).to_dict(),
                                     },
                                 ).to_dict(),
