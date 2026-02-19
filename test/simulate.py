@@ -35,6 +35,7 @@ SEARCH_ATTRIBUTES_SAMPLES = load_csv_to_dict_list('SearchAttributes.csv')
 # ========== Global state (in‑memory) ==========
 ALPHABET = "qwertyuiopasdfghjklzxcvbnm"
 DIGITS_NO_ZERO = "123456789"
+DIGITS = DIGITS_NO_ZERO + "0"
 
 # Trademarks added during this session
 added_trademarks = []  # each is dict of rows
@@ -80,7 +81,7 @@ def get_ogrn(t: str) -> str:
         main = "3" + random_word(13, DIGITS_NO_ZERO)
         control = (int(main) % 13) % 10
         return main + str(control)
-    raise Exveption(f"get_ogrn expected t in [UL, IP], got {t}")
+    raise Exception(f"get_ogrn expected t in [UL, IP], got {t}")
 
 def get_kpp() -> str:
     return random_word(4, DIGITS_NO_ZERO) + "01" + random_word(3, DIGITS_NO_ZERO)
@@ -93,7 +94,8 @@ def get_snils() -> str:
     control = (control % 101)
     if control >= 100:
         control = 0
-    return main + ("0" + str(control))[-2:]
+    result = main + ("0" + str(control))[-2:]
+    return result[:3] + "-" + result[3:6] + "-" + result[6:9] + " " + result[9:]
 
 def get_inn_for_type(t: str) -> str:
     if t == "UL":
@@ -170,6 +172,20 @@ BASE_USERS = [
     ("IP", "ИНН ОГРН", None, get_inn_for_type("IP"), get_ogrn("IP"), None),
     ("IP", "ИП ИНН ОГРН", None, get_inn_for_type("IP"), get_ogrn("IP"), None),
     ("IP", "ИндиВИдуальный предприниматель ИНН ОГРН", None, get_inn_for_type("IP"), get_ogrn("IP"), None),
+
+    ("FL", "Человек Невалидный СНИЛС+100", str(int(''.join([c for c in get_snils() if c in DIGITS]))+100), None, None, None),
+    ("FL", "Человек Невалидный ИННЮЛ", None, get_inn_for_type("UL"), None, None),
+    ("FL", "Человек Невалидный ИНН+100", None, str(int(get_inn_for_type("FL"))+100), None, None),
+    ("UL", "ООО Невалидный ИННФЛ КПП", None, get_inn_for_type("FL"), None, get_kpp()),
+    ("UL", "ООО Невалидный ИННЮЛ+10 КПП", None, str(int(get_inn_for_type("UL"))+10), None, get_kpp()),
+    ("UL", "ООО Невалидный ИНН КПП+10", None, get_inn_for_type("UL"), None, str(int(get_kpp())+10)),
+    ("UL", "ООО Невалидный ОГРНИП", None, None, get_ogrn("IP"), None),
+    ("UL", "ООО Невалидный ОГРН+10", None, None, str(int(get_ogrn("UL"))+10), None),
+    ("IP", "ИП Невалидный ИННЮЛ ОГРН", None, get_inn_for_type("UL"), get_ogrn("IP"), None),
+    ("IP", "ИП Невалидный ИНН+1000 ОГРН", None, str(int(get_inn_for_type("IP"))+1000), get_ogrn("IP"), None),
+    ("IP", "ИП Невалидный ИНН ОГРНЮЛ", None, get_inn_for_type("IP"), get_ogrn("UL"), None),
+    ("IP", "ИП Невалидный ИНН ОГРН+1000", None, get_inn_for_type("IP"), str(int(get_ogrn("IP"))+1000), None),
+    ("UNK", "нЕвАлИдНыЙ тИп", get_snils(), get_inn_for_type("FL"), get_ogrn("UL"), get_kpp()),
 ]
 
 def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: str = None, snils: str = None, inn: str = None, ogrn: str = None, kpp: str = None, no_input: bool = False):
@@ -191,9 +207,10 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
     new_contact_uid = new_uuid()
     new_object_uid = new_uuid()
     new_object_parent_uid = new_uuid()
+    arr = ["FL", "UL", "IP"]
     if not new_applicant_type_str and not no_input:
-        new_applicant_type_str = select_from_list("Enter contact_type: ", ["FL", "UL", "IP"])
-    new_applicant_type_int = ["FL", "UL", "IP"].index(new_applicant_type_str)
+        new_applicant_type_str = select_from_list("Enter contact_type: ", arr)
+    new_applicant_type_int = arr.index(new_applicant_type_str) if new_applicant_type_str in arr else -1
     if not new_applicant_name and not no_input:
         if select_binary("Want to enter applicant name yourself?"):
             new_applicant_name = input("name: ")
@@ -237,7 +254,8 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
         contact['ogrn'] = ogrn if ogrn or no_input else (get_ogrn() if select_binary("Add ОГРН? ") else None)
         contact['inn'] = inn if inn or no_input else (get_inn_for_type(new_applicant_type_str) if select_binary("Add ИНН? ") else None)
     else:
-        raise Exception(f"Unknown {new_applicant_type_str=}")
+        if not no_input:
+            print(f"Unknown {new_applicant_type_str=}")
     contact['language_code'] = 'ru'
     contact['update_time'] = now()
     contact['delete_time'] = None
@@ -264,6 +282,7 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
         insert_dict(cursor, 'fips_contact', contact)
         insert_dict(cursor, 'Objects', obj)
         insert_dict(cursor, 'fips_rutmkapplicant', rutmkapplicant)
+        print(f"\n{new_applicant_name}")
         print(f"✅ Added trademark {new_trademark_uid} (applicant: {new_applicant_name})")
         print(f"✅ Added contact {new_contact_uid} for this applicant")
         print(f"✅ Added object {new_object_uid} for this trademark (parent: {new_object_parent_uid})")

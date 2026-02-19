@@ -1,5 +1,15 @@
 TODO config.yaml?
 
+
+# TODO DELETE
+
+DELETE FROM public."fips_rutrademark" WHERE appl_date > '2026-02-18';
+DELETE FROM public."Objects" WHERE "UpdateDate" > '2026-02-18';
+DELETE FROM public."fips_contact" WHERE "update_time" > '2026-02-18';
+
+SELECT * FROM public."fips_contact" WHERE update_time > '2026-01-01' LIMIT 100;
+
+
 # Structure
 
 ## main
