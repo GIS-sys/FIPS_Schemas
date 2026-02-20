@@ -3,6 +3,7 @@ import json
 import os
 import time
 import traceback
+from tqdm import tqdm
 
 from src.logger import logger
 from src.db_connector import DBConnector
@@ -42,7 +43,7 @@ def main():
 
     # Main loop – runs forever, checking for new records and processing them
     while True:
-        print("\n\n\nNew scan")
+        print("\n" * 16 + "New scan")
         # ----- Step 1: scan for new records -----
         tracker.scan_new_records(
             db_connector,
@@ -51,7 +52,7 @@ def main():
         )
 
         # ----- Step 2: process records with status NEW or FORM_FAIL -----
-        for uid, rec in tracker.get_records_by_status("NEW", "FORM_FAIL"):
+        for uid, rec in tqdm(tracker.get_records_by_status("NEW", "FORM_FAIL")):
             print("=" * 16)
             print(f"Tracking {uid} status={rec['status']}")
             logger.set_file(config.DATA_FOLDER / f"log.{uid}.txt", clear=True)
@@ -86,7 +87,7 @@ def main():
             logger.set_file(None)   # close per‑record log
 
         # ----- Step 3: check FORM_SUCC records for Kind = 150002 -----
-        for uid, rec in tracker.get_records_by_status("FORM_SUCC"):
+        for uid, rec in tqdm(tracker.get_records_by_status("FORM_SUCC")):
             print("=" * 16)
             print(f"Tracking {uid} status={rec['status']}")
             try:
@@ -102,12 +103,12 @@ def main():
                 logger.log(f"Exception checking Kind for {uid}:\n{traceback.format_exc()}", force_print=True)
 
         # ----- Step 4: check FORM_SUCC records for Kind = 150002 -----
-        for uid, rec in tracker.get_records_by_status("150002"):
+        for uid, rec in tqdm(tracker.get_records_by_status("150002")):
             print("=" * 16)
             print(f"NEED TO SEND {rec['path_to_xml']}")
 
         # Wait before next iteration
-        print("Scan finished\n\n\n")
+        print("Scan finished" + "\n" * 16)
         time.sleep(config.SLEEP_INTERVAL)
 
 
