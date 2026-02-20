@@ -7,11 +7,12 @@ from src.validate import validate_list_functions
 
 
 class DataTemplateHowToElement:
-    def __init__(self, table_name: str, column_name: str, condition_column: str = None, after: str = None):
+    def __init__(self, table_name: str, column_name: str, condition_column: str = None, after: str = None, clause_after_when: str = None):
         self.table_name = table_name
         self.column_name = column_name
         self.condition_column = condition_column
         self.after = after
+        self.clause_after_when = clause_after_when
 
     @staticmethod
     def from_dict(obj: dict) -> Self:
@@ -20,6 +21,7 @@ class DataTemplateHowToElement:
             column_name=obj["column_name"],
             condition_column=obj.get("condition_column", None),
             after=obj.get("after", None),
+            clause_after_when=obj.get("clause_after_when", None),
         )
         return dthte
 
@@ -29,6 +31,7 @@ class DataTemplateHowToElement:
             "column_name": self.column_name,
             "condition_column": self.condition_column,
             "after": self.after,
+            "clause_after_when": self.clause_after_when,
         }
         result = {k: result[k] for k in result if result[k] is not None}
         return result
@@ -37,7 +40,7 @@ class DataTemplateHowToElement:
         condition_column = (self.condition_column if self.condition_column is not None else db_connector.get_index_column_name())
         req = f"""
             SELECT "{self.column_name}" FROM "{self.table_name}"
-            WHERE "{condition_column}" = '{condition_value}'
+            WHERE "{condition_column}" = '{condition_value}' {self.clause_after_when if self.clause_after_when is not None else ''}
         """
         data = db_connector.fetchall(req)
         logger.log("Debug", "to_value\n", data, "\n", req)
@@ -498,13 +501,21 @@ class DataTemplate:
                         },
                         "statusHistoryList": {
                             "statusHistory": [{
-                                "status": "-1",
+                                "status": DataTemplateElement(
+                                    example="TODOTODOTODO",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes", condition_column="ParentNumber", clause_after_when="AND \"Name\" = 'OC.OCCode'"),
+                                    ],
+                                    after="str(x)",
+                                ).to_dict(),
                                 "statusDate": DataTemplateElement(
                                     example="2025-12-12T10:32:23.042643",
                                     howto=[
                                         DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
-                                        DataTemplateHowToElement(column_name="CreatedDate", table_name="Objects", condition_column="Number"),
-                                    ]
+                                        DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes", condition_column="ParentNumber", clause_after_when="AND \"Name\" = 'OC.OCDate'"),
+                                    ],
+                                    after="x + 'T12:00:00.000000'",
                                 ).to_dict(),
                                 "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
                             }]

@@ -134,8 +134,8 @@ def select_binary(prompt: str) -> bool:
 BASE_USERS = [
     ("FL", "Человек Без Документов", None, None, None, None),
     ("FL", "Человек СНИЛС", get_snils(), None, None, None),
-    ("FL", "Человек СНИЛС ИНН", get_snils(), get_inn("FL"), None, None),
     ("FL", "Человек ИНН", None, get_inn("FL"), None, None),
+    ("FL", "Человек СНИЛС ИНН", get_snils(), get_inn("FL"), None, None),
     ("UL", "ООО <БЕЗ ДОКУМЕНТОВ>", None, None, None, None),
     ("UL", "ООО <ОГРН>", None, None, get_ogrn("UL"), None),
     ("UL", "ООО <КПП>", None, None, None, get_kpp()),
@@ -166,6 +166,7 @@ BASE_USERS = [
     ("IP", "ИП Невалидный ИНН ОГРН+1000", None, get_inn("IP"), str(int(get_ogrn("IP"))+1000), None),
     ("UNK", "нЕвАлИдНыЙ тИп", get_snils(), get_inn("FL"), get_ogrn("UL"), get_kpp()),
 ]
+OCCODES = ["004", "010", "700", "730", "940"]
 
 def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: str = None, snils: str = None, inn: str = None, ogrn: str = None, kpp: str = None, no_input: bool = False):
     """Add a new row to fips_rutrademark and linked rows to fips_contact and Objects."""
@@ -175,17 +176,22 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
         raise Exception("Cannot add contact: no sample data available.")
     if not OBJECTS_SAMPLES:
         raise Exception("Cannot add object: no sample data available.")
+    if not SEARCH_ATTRIBUTES_SAMPLES:
+        raise Exception("Cannot add search attributes: no sample data available.")
 
     # 1. Choose a random template from CSV
     template_rutrademark = random.choice(FIPS_RUTRADEMARK_SAMPLES)
     template_contact = random.choice(FIPS_CONTACT_SAMPLES)
     template_object = random.choice(OBJECTS_SAMPLES)
+    template_search_attributes = random.choice(SEARCH_ATTRIBUTES_SAMPLES)
 
     # 2. Generate new UUIDs
     new_trademark_uid = new_uuid()
     new_contact_uid = new_uuid()
     new_object_uid = new_uuid()
     new_object_parent_uid = new_uuid()
+    new_sa_date_uid = new_uuid()
+    new_sa_code_uid = new_uuid()
     arr = ["FL", "UL", "IP"]
     if not new_applicant_type_str and not no_input:
         new_applicant_type_str = select_from_list("Enter contact_type: ", arr)
@@ -255,29 +261,51 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
     obj['Kind'] = 150000
     # Keep other fields as in template
 
-    # 6. Insert all rows
+    # 6. Build search attributes row
+    sa_date = template_search_attributes.copy()
+    sa_date['ID'] = new_sa_date_uid
+    sa_date['ParentNumber'] = new_object_uid
+    sa_date['Name'] = "OC.OCDate"
+    sa_date['TextValue'] = now()[:10]
+    sa_date['CreatedDate'] = now()
+
+    sa_code = template_search_attributes.copy()
+    sa_code['ID'] = new_sa_code_uid
+    sa_code['ParentNumber'] = new_object_uid
+    sa_code['Name'] = "OC.OCCode"
+    sa_code['TextValue'] = random.choice(OCCODES)
+    sa_code['CreatedDate'] = now()
+    # Keep other fields as in template
+
+    # 7. Insert all rows
     try:
         insert_dict(cursor, 'fips_rutrademark', trademark)
         insert_dict(cursor, 'fips_contact', contact)
         insert_dict(cursor, 'Objects', obj)
         insert_dict(cursor, 'fips_rutmkapplicant', rutmkapplicant)
+        insert_dict(cursor, 'SearchAttributes', sa_date)
+        insert_dict(cursor, 'SearchAttributes', sa_code)
         print(f"\n{new_applicant_name}")
-        print(f"✅ Added trademark {new_trademark_uid} (applicant: {new_applicant_name})")
-        print(f"✅ Added contact {new_contact_uid} for this applicant")
-        print(f"✅ Added object {new_object_uid} for this trademark (parent: {new_object_parent_uid})")
+        print(f"✅ Added trademark {trademark}")
+        print(f"✅ Added contact {contact} for this applicant")
+        print(f"✅ Added object {obj} for this trademark")
+        print(f"✅ Added SearchAttribute {sa_date} for this parent (parent: {new_object_uid})")
+        print(f"✅ Added SearchAttribute {sa_code} for this parent (parent: {new_object_uid})")
     except Exception as e:
         print(f"❌ Database error: {e}")
         return
 
-    # 7. Remember for later operations
+    # 8. Remember for later operations
     added_trademarks.append({
         'trademark_row': trademark,
         'contact_row': contact,
         'object_row': obj,
+        'search_attribute_date': sa_date,
+        'search_attribute_code': sa_code,
     })
 
 # ========== Operation 2: Add another Object with Kind=150002 ==========
-def op_add_object_trigger(cursor, parent: str = None):
+def op_add_object_trigger(cursor, parent_uuid: str = None):
     """Insert a new Object row with a new Number and an existing parent."""
     if not OBJECTS_SAMPLES:
         raise Exception("Cannot add object: no sample data available.")
@@ -293,7 +321,7 @@ def op_add_object_trigger(cursor, parent: str = None):
         t = trademark['trademark_row']
         o = trademark['object_row']
         return f"{o['Number']} (parent={o['ParentNumber']}, applicant={t['applicants']})"
-    if not parent:
+    if not parent_uuid:
         parent = select_from_list("Choose parent Object (by index): ", added_trademarks, obj_display)
         if not parent:
             return
@@ -370,6 +398,8 @@ def main():
                     kpp = d[5],
                     no_input=True,
                 )
+            for i in [0, 3, 7, 11]:
+                op_add_object_trigger(cursor, parent_uuid=added_trademarks[-len(BASE_USERS) + i]['object_row']['ParentNumber'])
         else:
             print("Unknown command.")
 
