@@ -118,6 +118,8 @@ class ConditionalElement:
             self.condition_value_equal = conditions['condition_value_equal']
         elif 'condition_values_in' in conditions:
             self.condition_values_in = conditions['condition_values_in']
+        elif 'condition_values_not_in' in conditions:
+            self.condition_values_not_in = conditions['condition_values_not_in']
         elif 'condition_value_empty' in conditions:
             self.condition_value_empty = conditions['condition_value_empty']
         else:
@@ -135,6 +137,8 @@ class ConditionalElement:
             conditions['condition_value_equal'] = data['condition_value_equal']
         elif 'condition_values_in' in data:
             conditions['condition_values_in'] = data['condition_values_in']
+        elif 'condition_values_not_in' in data:
+            conditions['condition_values_not_in'] = data['condition_values_not_in']
         elif 'condition_value_empty' in data:
             conditions['condition_value_empty'] = data['condition_value_empty']
         # Recursively convert the result (it may contain nested special nodes)
@@ -151,6 +155,8 @@ class ConditionalElement:
             result_dict['condition_value_equal'] = self.condition_value_equal
         elif hasattr(self, 'condition_values_in'):
             result_dict['condition_values_in'] = self.condition_values_in
+        elif hasattr(self, 'condition_values_not_in'):
+            result_dict['condition_values_not_in'] = self.condition_values_not_in
         elif hasattr(self, 'condition_value_empty'):
             result_dict['condition_value_empty'] = self.condition_value_empty
 
@@ -178,6 +184,8 @@ class ConditionalElement:
             condition_met = (condition_value == self.condition_value_equal)
         elif hasattr(self, 'condition_values_in'):
             condition_met = (condition_value in self.condition_values_in)
+        elif hasattr(self, 'condition_values_not_in'):
+            condition_met = (condition_value not in self.condition_values_not_in)
         elif hasattr(self, 'condition_value_empty'):
             # condition_value_empty = True  -> we want the value to be empty
             # condition_value_empty = False -> we want the value to be non‑empty
@@ -474,6 +482,24 @@ class DataTemplate:
                                             },
                                         ).to_dict(),
                                     },
+                                ).to_dict(),
+                            },
+                        ).to_dict(),
+                        "DEBUG_contact_type": ConditionalElement(
+                            howto=[
+                                DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid"),
+                            ],
+                            condition_values_not_in=("0", "1", "2"),
+                            result={
+                                "contact_type": DataTemplateElement(
+                                    example="1",
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
+                                        DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
+                                        DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid"),
+                                    ],
                                 ).to_dict(),
                             },
                         ).to_dict(),
