@@ -3,6 +3,7 @@ from typing import Any, Self
 
 from src.db_connector import DBConnector
 from src.logger import logger
+from src.validate import validate_list_functions
 
 
 class DataTemplateHowToElement:
@@ -48,16 +49,16 @@ class DataTemplateHowToElement:
                 foo = eval(f"lambda x: ({self.after})")
                 data = foo(data)
             except Exception:
-                logger.log(f"\nERROR: {traceback.format_exc()}")
-                return None
+                raise Exception(f"{data} could not be formatted using after={self.after}")
         return data
 
 
 class DataTemplateElement:
-    def __init__(self, example: str, howto: list[DataTemplateHowToElement], after: str = None):
+    def __init__(self, example: str, howto: list[DataTemplateHowToElement], after: str = None, validate: list[str] = None):
         self.example = example
         self.howto = howto
         self.after = after
+        self.validate = validate if validate is not None else []
 
     @staticmethod
     def from_dict_able(obj: dict) -> bool:
@@ -69,6 +70,7 @@ class DataTemplateElement:
                 "example": self.example,
                 "howto": [howto_el.to_dict() for howto_el in self.howto],
                 "after": self.after,
+                "validate": self.validate,
             }
         }
 
@@ -79,6 +81,7 @@ class DataTemplateElement:
             example=obj["example"],
             howto=[DataTemplateHowToElement.from_dict(howto_el) for howto_el in obj["howto"]],
             after=obj.get("after", None),
+            validate=obj.get("validate", []),
         )
         return dte
 
@@ -97,8 +100,9 @@ class DataTemplateElement:
                 foo = eval(f"lambda x: ({self.after})")
                 data = foo(data)
             except Exception:
-                logger.log(f"\nERROR: {traceback.format_exc()}")
-                return None
+                raise Exception(f"{data} could not be formatted using after={self.after}")
+        if not validate_list_functions(self.validate, data):
+            raise Exception(f"{data} was not validated by {self.validate}")
         return str(data)
 
 
@@ -292,7 +296,8 @@ class DataTemplate:
                                                 DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                                 DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
                                                 DataTemplateHowToElement(column_name="snils", table_name="fips_contact", condition_column="contact_uid", after="''.join(c for c in str(x) if c in '1234567890')"),
-                                            ]
+                                            ],
+                                            validate=["snils"],
                                         ).to_dict(),
                                         "lastName": DataTemplateElement(
                                             example="Иванов",
@@ -309,7 +314,7 @@ class DataTemplate:
                                         "middleName": DataTemplateElement(
                                             example="Иванович",
                                             howto=[
-                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.strip().split(' ')[2]"),
+                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip().split(' ')+[None,None,None])[2]"),
                                             ],
                                             after="'' if x is None else x"
                                         ).to_dict(),
@@ -330,7 +335,8 @@ class DataTemplate:
                                                 DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                                 DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
                                                 DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="contact_uid"),
-                                            ]
+                                            ],
+                                            validate=["inn_fl"],
                                         ).to_dict(),
                                         "lastName": DataTemplateElement(
                                             example="Иванов",
@@ -347,7 +353,7 @@ class DataTemplate:
                                         "middleName": DataTemplateElement(
                                             example="Иванович",
                                             howto=[
-                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="x.strip().split(' ')[2]"),
+                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip().split(' ')+[None,None,None])[2]"),
                                             ],
                                             after="'' if x is None else x"
                                         ).to_dict(),
@@ -378,7 +384,8 @@ class DataTemplate:
                                                 DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                                 DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
                                                 DataTemplateHowToElement(column_name="ogrn", table_name="fips_contact", condition_column="contact_uid"),
-                                            ]
+                                            ],
+                                            validate=["ogrn_ip"],
                                         ).to_dict(),
                                         "inn": DataTemplateElement(
                                             example="123456789000",
@@ -386,7 +393,8 @@ class DataTemplate:
                                                 DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                                 DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
                                                 DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="contact_uid"),
-                                            ]
+                                            ],
+                                            validate=["inn_ip"],
                                         ).to_dict(),
                                         "lastName": DataTemplateElement(
                                             example="Иванов",
@@ -403,7 +411,7 @@ class DataTemplate:
                                         "middleName": DataTemplateElement(
                                             example="Иванович",
                                             howto=[
-                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="(x.strip()[3:] if x.strip().lower().startswith('ип ') else (x.strip()[31:] if x.strip().lower().startswith('индивидуальный предприниматель ') else x.strip())).split(' ')[2]"),
+                                                DataTemplateHowToElement(column_name="applicants", table_name="fips_rutrademark", after="((x.strip()[3:] if x.strip().lower().startswith('ип ') else (x.strip()[31:] if x.strip().lower().startswith('индивидуальный предприниматель ') else x.strip())).split(' ')+[None,None,None])[2]"),
                                             ],
                                             after="'' if x is None else x"
                                         ).to_dict(),
@@ -430,7 +438,8 @@ class DataTemplate:
                                                     DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                                     DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
                                                     DataTemplateHowToElement(column_name="ogrn", table_name="fips_contact", condition_column="contact_uid"),
-                                                ]
+                                                ],
+                                                validate=["ogrn_ul"],
                                             ).to_dict(),
                                         ).to_dict(),
                                         "inn_kpp": ConditionalElement(
@@ -447,7 +456,8 @@ class DataTemplate:
                                                         DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                                         DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
                                                         DataTemplateHowToElement(column_name="inn", table_name="fips_contact", condition_column="contact_uid"),
-                                                    ]
+                                                    ],
+                                                    validate=["inn_ul"],
                                                 ).to_dict(),
                                                 "kpp": DataTemplateElement(
                                                     example="123456789",
@@ -455,7 +465,8 @@ class DataTemplate:
                                                         DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                                         DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
                                                         DataTemplateHowToElement(column_name="customer_number", table_name="fips_contact", condition_column="contact_uid"),
-                                                    ]
+                                                    ],
+                                                    validate=["kpp"],
                                                 ).to_dict(),
                                             },
                                         ).to_dict(),

@@ -7,8 +7,9 @@ DELETE FROM public."fips_rutrademark" WHERE appl_date > '2026-02-18';
 DELETE FROM public."Objects" WHERE "UpdateDate" > '2026-02-18';
 DELETE FROM public."fips_contact" WHERE "update_time" > '2026-02-18';
 
-SELECT * FROM public."fips_contact" WHERE update_time > '2026-01-01' LIMIT 100;
-
+echo -e "9\nq\n" | python ./simulate.py > /tmp/c
+rm data/*.xml; data/*.txt; rm data/template.json; rm data/tracker.json; python ./main.py > /tmp/b
+vim -O /tmp/b /tmp/c data/
 
 # Structure
 

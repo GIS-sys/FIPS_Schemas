@@ -99,7 +99,7 @@ def main():
             except Exception:
                 # Log error but do not change status – will be retried next cycle?
                 # Here we simply log it; you might want to set a temporary error field.
-                logger.log(f"Error checking Kind for {uid}:\n{traceback.format_exc()}", force_print=True)
+                logger.log(f"Exception checking Kind for {uid}:\n{traceback.format_exc()}", force_print=True)
 
         # ----- Step 4: check FORM_SUCC records for Kind = 150002 -----
         for uid, rec in tracker.get_records_by_status("150002"):

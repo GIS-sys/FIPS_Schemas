@@ -7,6 +7,7 @@ import sys
 import os
 from psycopg2 import sql
 
+import validate
 import util
 
 
@@ -75,12 +76,10 @@ def insert_dict(cursor, table: str, data: dict):
 def get_ogrn(t: str) -> str:
     if t == "UL":
         main = random.choice(("1", "5")) + random_word(11, DIGITS_NO_ZERO)
-        control = (int(main) % 11) % 10
-        return main + str(control)
+        return main + validate.get_control_ogrn(t, main)
     if t == "IP":
         main = "3" + random_word(13, DIGITS_NO_ZERO)
-        control = (int(main) % 13) % 10
-        return main + str(control)
+        return main + validate.get_control_ogrn(t, main)
     raise Exception(f"get_ogrn expected t in [UL, IP], got {t}")
 
 def get_kpp() -> str:
@@ -88,35 +87,16 @@ def get_kpp() -> str:
 
 def get_snils() -> str:
     main = random_word(9, DIGITS_NO_ZERO)
-    control = 0
-    for i, d in enumerate(main):
-        control += int(d) * (9 - i)
-    control = (control % 101)
-    if control >= 100:
-        control = 0
-    result = main + ("0" + str(control))[-2:]
-    return result[:3] + "-" + result[3:6] + "-" + result[6:9] + " " + result[9:]
+    return main + validate.get_control_snils(main)
 
-def get_inn_for_type(t: str) -> str:
+def get_inn(t: str) -> str:
     if t == "UL":
         main = random_word(9, DIGITS_NO_ZERO)
-        control = 0
-        for i, d in enumerate(main):
-            control += int(d) * [2, 4, 10, 3, 5, 9, 4, 6, 8][i]
-        control = (control % 11) % 10
-        return main + str(control)
+        return main + validate.get_control_inn(t, main)
     if t == "IP" or t == "FL":
         main = random_word(10, DIGITS_NO_ZERO)
-        control1 = 0
-        for i, d in enumerate(main):
-            control1 += int(d) * [7, 2, 4, 10, 3, 5, 9, 4, 6, 8][i]
-        control1 = (control1 % 11) % 10
-        control2 = 0
-        for i, d in enumerate(main + str(control1)):
-            control2 += int(d) * [3, 7, 2, 4, 10, 3, 5, 9, 4, 6, 8][i]
-        control2 = (control2 % 11) % 10
-        return main + str(control1) + str(control2)
-    raise Exveption(f"get_inn_for_type expected t in [FL, UL, IP], got {t}")
+        return main + validate.get_control_inn(t, main)
+    raise Exception(f"get_inn expected t in [FL, UL, IP], got {t}")
 
 def list_choices(items, display_func):
     """Print enumerated list of items and return a dict mapping index->item."""
@@ -154,38 +134,37 @@ def select_binary(prompt: str) -> bool:
 BASE_USERS = [
     ("FL", "Человек Без Документов", None, None, None, None),
     ("FL", "Человек СНИЛС", get_snils(), None, None, None),
-    ("FL", "Человек СНИЛС ИНН", get_snils(), get_inn_for_type("FL"), None, None),
-    ("FL", "Человек ИНН", None, get_inn_for_type("FL"), None, None),
+    ("FL", "Человек СНИЛС ИНН", get_snils(), get_inn("FL"), None, None),
+    ("FL", "Человек ИНН", None, get_inn("FL"), None, None),
     ("UL", "ООО <БЕЗ ДОКУМЕНТОВ>", None, None, None, None),
     ("UL", "ООО <ОГРН>", None, None, get_ogrn("UL"), None),
     ("UL", "ООО <КПП>", None, None, None, get_kpp()),
     ("UL", "ООО <ОГРН КПП>", None, None, get_ogrn("UL"), get_kpp()),
-    ("UL", "ООО <ИНН>", None, get_inn_for_type("UL"), None, None),
-    ("UL", "ООО <ИНН ОГРН>", None, get_inn_for_type("UL"), get_ogrn("UL"), None),
-    ("UL", "ООО <ИНН КПП>", None, get_inn_for_type("UL"), None, get_kpp()),
-    ("UL", "ООО <ИНН ОГРН КПП>", None, get_inn_for_type("UL"), get_ogrn("UL"), get_kpp()),
-    ("UL", "ООО <ИНН ОГРН КПП>", None, get_inn_for_type("UL"), get_ogrn("UL"), get_kpp()),
+    ("UL", "ООО <ИНН>", None, get_inn("UL"), None, None),
+    ("UL", "ООО <ИНН ОГРН>", None, get_inn("UL"), get_ogrn("UL"), None),
+    ("UL", "ООО <ИНН КПП>", None, get_inn("UL"), None, get_kpp()),
+    ("UL", "ООО <ИНН ОГРН КПП>", None, get_inn("UL"), get_ogrn("UL"), get_kpp()),
+    ("UL", "ООО <ИНН ОГРН КПП>", None, get_inn("UL"), get_ogrn("UL"), get_kpp()),
     ("IP", "Без Документов", None, None, None, None),
-    ("IP", "ИНН", None, get_inn_for_type("IP"), None, None),
+    ("IP", "ИНН", None, get_inn("IP"), None, None),
     ("IP", "ОГРН", None, None, get_ogrn("IP"), None),
-    ("IP", "Я ЛЮБЛЮ ИНН ОГРН", None, get_inn_for_type("IP"), get_ogrn("IP"), None),
-    ("IP", "ИНН ОГРН", None, get_inn_for_type("IP"), get_ogrn("IP"), None),
-    ("IP", "ИП ИНН ОГРН", None, get_inn_for_type("IP"), get_ogrn("IP"), None),
-    ("IP", "ИндиВИдуальный предприниматель ИНН ОГРН", None, get_inn_for_type("IP"), get_ogrn("IP"), None),
+    ("IP", "Я ЛЮБЛЮ ИНН ОГРН", None, get_inn("IP"), get_ogrn("IP"), None),
+    ("IP", "ИНН ОГРН", None, get_inn("IP"), get_ogrn("IP"), None),
+    ("IP", "ИП ИНН ОГРН", None, get_inn("IP"), get_ogrn("IP"), None),
+    ("IP", "ИндиВИдуальный предприниматель ИНН ОГРН", None, get_inn("IP"), get_ogrn("IP"), None),
 
     ("FL", "Человек Невалидный СНИЛС+100", str(int(''.join([c for c in get_snils() if c in DIGITS]))+100), None, None, None),
-    ("FL", "Человек Невалидный ИННЮЛ", None, get_inn_for_type("UL"), None, None),
-    ("FL", "Человек Невалидный ИНН+100", None, str(int(get_inn_for_type("FL"))+100), None, None),
-    ("UL", "ООО Невалидный ИННФЛ КПП", None, get_inn_for_type("FL"), None, get_kpp()),
-    ("UL", "ООО Невалидный ИННЮЛ+10 КПП", None, str(int(get_inn_for_type("UL"))+10), None, get_kpp()),
-    ("UL", "ООО Невалидный ИНН КПП+10", None, get_inn_for_type("UL"), None, str(int(get_kpp())+10)),
+    ("FL", "Человек Невалидный ИННЮЛ", None, get_inn("UL"), None, None),
+    ("FL", "Человек Невалидный ИНН+100", None, str(int(get_inn("FL"))+100), None, None),
+    ("UL", "ООО Невалидный ИННФЛ КПП", None, get_inn("FL"), None, get_kpp()),
+    ("UL", "ООО Невалидный ИННЮЛ+10 КПП", None, str(int(get_inn("UL"))+10), None, get_kpp()),
     ("UL", "ООО Невалидный ОГРНИП", None, None, get_ogrn("IP"), None),
     ("UL", "ООО Невалидный ОГРН+10", None, None, str(int(get_ogrn("UL"))+10), None),
-    ("IP", "ИП Невалидный ИННЮЛ ОГРН", None, get_inn_for_type("UL"), get_ogrn("IP"), None),
-    ("IP", "ИП Невалидный ИНН+1000 ОГРН", None, str(int(get_inn_for_type("IP"))+1000), get_ogrn("IP"), None),
-    ("IP", "ИП Невалидный ИНН ОГРНЮЛ", None, get_inn_for_type("IP"), get_ogrn("UL"), None),
-    ("IP", "ИП Невалидный ИНН ОГРН+1000", None, get_inn_for_type("IP"), str(int(get_ogrn("IP"))+1000), None),
-    ("UNK", "нЕвАлИдНыЙ тИп", get_snils(), get_inn_for_type("FL"), get_ogrn("UL"), get_kpp()),
+    ("IP", "ИП Невалидный ИННЮЛ ОГРН", None, get_inn("UL"), get_ogrn("IP"), None),
+    ("IP", "ИП Невалидный ИНН+1000 ОГРН", None, str(int(get_inn("IP"))+1000), get_ogrn("IP"), None),
+    ("IP", "ИП Невалидный ИНН ОГРНЮЛ", None, get_inn("IP"), get_ogrn("UL"), None),
+    ("IP", "ИП Невалидный ИНН ОГРН+1000", None, get_inn("IP"), str(int(get_ogrn("IP"))+1000), None),
+    ("UNK", "нЕвАлИдНыЙ тИп", get_snils(), get_inn("FL"), get_ogrn("UL"), get_kpp()),
 ]
 
 def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: str = None, snils: str = None, inn: str = None, ogrn: str = None, kpp: str = None, no_input: bool = False):
@@ -245,14 +224,14 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
     contact['contact_type'] = new_applicant_type_int
     if new_applicant_type_str == "FL":
         contact['snils'] = snils if snils or no_input else (get_snils() if select_binary("Add СНИЛС? ") else None)
-        contact['inn'] = inn if inn or no_input else (get_inn_for_type(new_applicant_type_str) if select_binary("Add ИНН? ") else None)
+        contact['inn'] = inn if inn or no_input else (get_inn(new_applicant_type_str) if select_binary("Add ИНН? ") else None)
     elif new_applicant_type_str == "UL":
         contact['ogrn'] = ogrn if ogrn or no_input else (get_ogrn() if select_binary("Add ОГРН? ") else None)
-        contact['inn'] = inn if inn or no_input else (get_inn_for_type(new_applicant_type_str) if select_binary("Add ИНН? ") else None)
+        contact['inn'] = inn if inn or no_input else (get_inn(new_applicant_type_str) if select_binary("Add ИНН? ") else None)
         contact['customer_number'] = kpp if kpp or no_input else (get_kpp() if select_binary("Add КПП? ") else None)
     elif new_applicant_type_str == "IP":
         contact['ogrn'] = ogrn if ogrn or no_input else (get_ogrn() if select_binary("Add ОГРН? ") else None)
-        contact['inn'] = inn if inn or no_input else (get_inn_for_type(new_applicant_type_str) if select_binary("Add ИНН? ") else None)
+        contact['inn'] = inn if inn or no_input else (get_inn(new_applicant_type_str) if select_binary("Add ИНН? ") else None)
     else:
         if not no_input:
             print(f"Unknown {new_applicant_type_str=}")
