@@ -490,7 +490,7 @@ class DataTemplate:
                         "requestDate": DataTemplateElement(
                             example="2025-12-12T10:31:23.042643",
                             howto=[
-                                DataTemplateHowToElement(column_name="appl_receiving_date", table_name="fips_rutrademark", after="x + 'T12:00:00.000000'"),
+                                DataTemplateHowToElement(column_name="appl_receiving_date", table_name="fips_rutrademark", after="str(x) + 'T12:00:00.000000'"),
                             ]
                         ).to_dict(),
                         "OfficeInfo": {
@@ -515,7 +515,7 @@ class DataTemplate:
                                         DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
                                         DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes", condition_column="ParentNumber", clause_after_when="AND \"Name\" = 'OC.OCDate'"),
                                     ],
-                                    after="x + 'T12:00:00.000000'",
+                                    after="str(x) + 'T12:00:00.000000'",
                                 ).to_dict(),
                                 "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
                             }]
