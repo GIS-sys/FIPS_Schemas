@@ -12,12 +12,12 @@ class RecordTracker:
 
     def _load(self) -> dict[str, dict[str, Any]]:
         if os.path.exists(self.file_path):
-            with open(self.file_path, 'r') as f:
+            with open(self.file_path, 'r', encoding="utf-8") as f:
                 return json.load(f)
         return {}
 
     def save(self):
-        with open(self.file_path, 'w') as f:
+        with open(self.file_path, 'w', encoding="utf-8") as f:
             json.dump(self.data, f, indent=2)
 
     def scan_new_records(self, db_connector, date_col: str, start_date: str):

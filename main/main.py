@@ -20,7 +20,7 @@ def main():
 
     # Write debug info once (optional)
     info = db_connector.get_debug_info()
-    with open(config.FILE_DB_DEBUG, "w") as f:
+    with open(config.FILE_DB_DEBUG, "w", encoding="utf-8") as f:
         f.write(str(info))
 
     # Initialize XML generator
@@ -29,12 +29,12 @@ def main():
     # Create default template if missing
     if not os.path.exists(config.FILE_TEMPLATE_JSON):
         example_json = DataTemplate.create_example_json()
-        with open(config.FILE_TEMPLATE_JSON, "w") as f:
+        with open(config.FILE_TEMPLATE_JSON, "w", encoding="utf-8") as f:
             json.dump(example_json, f, indent="\t")
         print(f"WARNING: No JSON template found\nSample JSON template was created in {config.FILE_TEMPLATE_JSON}\nChange it if needed\n\n")
 
     # Load the template once (it will be deep‑copied for each record)
-    with open(config.FILE_TEMPLATE_JSON, "r") as f:
+    with open(config.FILE_TEMPLATE_JSON, "r", encoding="utf-8") as f:
         data_template_json = json.load(f)
 
     # Initialize the persistent tracker
@@ -65,7 +65,7 @@ def main():
                 # Convert to XML
                 xml_data = xml_gen.json_to_xml(data_template.data)
                 xml_path = config.DATA_FOLDER / f"{uid}.xml"
-                with open(xml_path, "w") as f:
+                with open(xml_path, "w", encoding="utf-8") as f:
                     f.write(xml_data)
 
                 # Validate against XSD

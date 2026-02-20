@@ -5,14 +5,14 @@ class Logger:
     def set_file(self, path: str, clear: bool = False):
         self.path = path
         if clear:
-            with open(self.path, "w"):
+            with open(self.path, "w", encoding="utf-8"):
                 pass
 
     def log(self, *args, force_print=False):
         if self.path is None or force_print:
             print(*args)
         if self.path is not None:
-            with open(self.path, "a") as f:
+            with open(self.path, "a", encoding="utf-8") as f:
                 for arg in args:
                     f.write(str(arg) + "\n")
 
