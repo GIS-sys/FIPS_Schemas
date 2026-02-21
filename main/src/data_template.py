@@ -56,6 +56,20 @@ class DataTemplateHowToElement:
         return data
 
 
+_validation_errors = []
+
+def clear_validation_errors():
+    global _validation_errors
+    _validation_errors = []
+
+def add_validation_error(msg):
+    global _validation_errors
+    _validation_errors.append(msg)
+
+def get_validation_errors():
+    return _validation_errors
+
+
 class DataTemplateElement:
     def __init__(self, example: str, howto: list[DataTemplateHowToElement], after: str = None, validate: list[str] = None):
         self.example = example
@@ -105,7 +119,9 @@ class DataTemplateElement:
             except Exception:
                 raise Exception(f"{data} could not be formatted using after={self.after}")
         if not validate_list_functions(self.validate, data):
-            raise Exception(f"{data} was not validated by {self.validate}")
+            msg = f"Validation failed for value '{data}' with rules {self.validate}"
+            add_validation_error(msg)
+            logger.log(msg)
         return str(data)
 
 

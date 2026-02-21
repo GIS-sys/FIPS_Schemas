@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from src.logger import logger
 from src.db_connector import DBConnector
-from src.data_template import DataTemplate
+from src.data_template import DataTemplate, clear_validation_errors, get_validation_errors
 from src.xml_generator import XMLGenerator
 from src.tracker import RecordTracker
 
@@ -60,6 +60,9 @@ def main():
                 # Create a fresh copy of the template for this record
                 data_template = DataTemplate(copy.deepcopy(data_template_json))
 
+                # Clear previous validation errors
+                clear_validation_errors()
+
                 # Fill the template using this uid as the starting index
                 data_template.fill_template(db_connector, ind=uid)
 
@@ -68,6 +71,12 @@ def main():
                 xml_path = config.DATA_FOLDER / f"{uid}.xml"
                 with open(xml_path, "w", encoding="utf-8") as f:
                     f.write(xml_data)
+
+                # Check for custom validation errors
+                errors = get_validation_errors()
+                if errors:
+                    error_msg = "Custom validation errors:\n" + "\n".join(errors)
+                    raise Exception(error_msg)
 
                 # Validate against XSD
                 validation_result = xml_gen.validate_xml(xml_data)
