@@ -289,7 +289,7 @@ class DataTemplate:
                             howto=[
                                 DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                 DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
-                                DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid"),
+                                DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid", after="str(x)"),
                             ],
                             condition_value_equal="0",
                             result={
@@ -377,7 +377,7 @@ class DataTemplate:
                             howto=[
                                 DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                 DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
-                                DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid"),
+                                DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid", after="str(x)"),
                             ],
                             condition_values_in=("1", "2"),
                             result={
@@ -385,7 +385,7 @@ class DataTemplate:
                                     howto=[
                                         DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                         DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
-                                        DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid"),
+                                        DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid", after="str(x)"),
                                     ],
                                     condition_value_equal="2",
                                     result={
@@ -432,7 +432,7 @@ class DataTemplate:
                                     howto=[
                                         DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                         DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
-                                        DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid"),
+                                        DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid", after="str(x)"),
                                     ],
                                     condition_value_equal="1",
                                     result={
@@ -489,7 +489,7 @@ class DataTemplate:
                             howto=[
                                 DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                 DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
-                                DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid"),
+                                DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid", after="str(x)"),
                             ],
                             condition_values_not_in=("0", "1", "2"),
                             result={
@@ -498,7 +498,7 @@ class DataTemplate:
                                     howto=[
                                         DataTemplateHowToElement(column_name="rutmk_uid", table_name="fips_rutrademark"),
                                         DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
-                                        DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid"),
+                                        DataTemplateHowToElement(column_name="contact_type", table_name="fips_contact", condition_column="contact_uid", after="str(x)"),
                                     ],
                                 ).to_dict(),
                             },
