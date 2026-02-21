@@ -547,7 +547,8 @@ class DataTemplate:
                                     example="TODOTODOTODO",
                                     howto=[
                                         DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
-                                        DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes", condition_column="ParentNumber", clause_after_when="AND \"Name\" = 'OC.OCCode'"),
+                                        # DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects", condition_column="Number"),
+                                        DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes", condition_column="ParentNumber", clause_after_when="AND \"Name\" = '%Code%'"),
                                     ],
                                     after="str(x)",
                                 ).to_dict(),
@@ -555,7 +556,8 @@ class DataTemplate:
                                     example="2025-12-12T10:32:23.042643",
                                     howto=[
                                         DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
-                                        DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes", condition_column="ParentNumber", clause_after_when="AND \"Name\" = 'OC.OCDate'"),
+                                        # DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects", condition_column="Number"),
+                                        DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes", condition_column="ParentNumber", clause_after_when="AND \"Name\" = '%Date%'"),
                                     ],
                                     after="str(x) + 'T12:00:00.000000'",
                                 ).to_dict(),
