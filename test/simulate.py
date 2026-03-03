@@ -183,15 +183,12 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
     template_rutrademark = random.choice(FIPS_RUTRADEMARK_SAMPLES)
     template_contact = random.choice(FIPS_CONTACT_SAMPLES)
     template_object = random.choice(OBJECTS_SAMPLES)
-    template_search_attributes = random.choice(SEARCH_ATTRIBUTES_SAMPLES)
 
     # 2. Generate new UUIDs
     new_trademark_uid = new_uuid()
     new_contact_uid = new_uuid()
     new_object_uid = new_uuid()
     new_object_parent_uid = new_uuid()
-    new_sa_date_uid = new_uuid()
-    new_sa_code_uid = new_uuid()
     arr = ["FL", "UL", "IP"]
     if not new_applicant_type_str and not no_input:
         new_applicant_type_str = select_from_list("Enter contact_type: ", arr)
@@ -266,22 +263,7 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
     child_obj['CreatedDate'] = now()
     child_obj['Kind'] = 150000                 # typical kind for trademark object
 
-    # 8. Build search attributes rows for the CHILD object
-    sa_date = template_search_attributes.copy()
-    sa_date['ID'] = new_sa_date_uid
-    sa_date['ParentNumber'] = new_object_uid
-    sa_date['Name'] = "OC.OCDate"
-    sa_date['TextValue'] = now()[:10]
-    sa_date['CreatedDate'] = now()
-
-    sa_code = template_search_attributes.copy()
-    sa_code['ID'] = new_sa_code_uid
-    sa_code['ParentNumber'] = new_object_uid
-    sa_code['Name'] = "OC.OCCode"
-    sa_code['TextValue'] = random.choice(OCCODES)
-    sa_code['CreatedDate'] = now()
-
-    # 9. Insert all rows
+    # 8. Insert all rows (no SearchAttributes inserted here)
     try:
         # Insert parent object first (no FK dependency)
         insert_dict(cursor, 'Objects', parent_obj)
@@ -289,27 +271,21 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
         insert_dict(cursor, 'fips_contact', contact)
         insert_dict(cursor, 'Objects', child_obj)
         insert_dict(cursor, 'fips_rutmkapplicant', rutmkapplicant)
-        insert_dict(cursor, 'SearchAttributes', sa_date)
-        insert_dict(cursor, 'SearchAttributes', sa_code)
         print(f"\n{new_applicant_name}")
         print(f"✅ Added trademark {trademark}")
         print(f"✅ Added contact {contact} for this applicant")
         print(f"✅ Added parent object {parent_obj['Number']} (kind={parent_obj['Kind']})")
         print(f"✅ Added child object {child_obj['Number']} (kind={child_obj['Kind']}) linked to trademark")
-        print(f"✅ Added SearchAttribute {sa_date} for child object")
-        print(f"✅ Added SearchAttribute {sa_code} for child object")
     except Exception as e:
         print(f"❌ Database error: {e}")
         return
 
-    # 10. Remember for later operations
+    # 9. Remember for later operations
     added_trademarks.append({
         'trademark_row': trademark,
         'contact_row': contact,
-        'parent_object_row': parent_obj,      # new
+        'parent_object_row': parent_obj,
         'child_object_row': child_obj,
-        'search_attribute_date': sa_date,
-        'search_attribute_code': sa_code,
     })
 
 # ========== Operation 2: Add another Object with Kind=150002 ==========
@@ -402,7 +378,6 @@ def main():
         print("\n--- Commands ---")
         print("1 : Add trademark + contact + object")
         print("2 : Add another Object with same parent and Kind=150002")
-        print("3 : (TODO) Add SearchAttributes for a trademark (requires existing Object)")
         print("9 : Add ALL KINDS of new records automatically")
         print("q : quit")
         cmd = input("> ").strip().lower()
@@ -417,6 +392,7 @@ def main():
             raise NotImplementedError()
             # op_add_search_attribute(cursor)
         elif cmd == '9':
+            # Add all base users
             for d in BASE_USERS:
                 op_add_base(
                     cursor,
@@ -428,8 +404,17 @@ def main():
                     kpp = d[5],
                     no_input=True,
                 )
-            for i in [0, 3, 7, 11]:
-                op_add_object_trigger(cursor, parent_uuid=added_trademarks[-len(BASE_USERS) + i]['object_row']['ParentNumber'])
+
+            # Define how many extra objects to add for each base user (1, 2, or 3)
+            # Cycle through 1,2,3 so that some get one, some get two, some get three
+            object_counts = [(i % 3) + 1 for i in range(len(BASE_USERS))]
+
+            # For each added trademark, add the specified number of objects under its parent
+            for i, trademark_info in enumerate(added_trademarks):
+                count = object_counts[i]
+                parent_uuid = trademark_info['parent_object_row']['Number']
+                for _ in range(count):
+                    op_add_object_trigger(cursor, parent_uuid=parent_uuid)
         else:
             print("Unknown command.")
 
