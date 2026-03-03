@@ -645,7 +645,7 @@ class DataTemplate:
                                                                      condition_column="ParentNumber",
                                                                      clause_after_when='AND "Name" = \'OCDate\''),
                                         ],
-                                        after="str(x) + 'T12:00:00.000000'",
+                                        after="'-'.join(reversed(str(x).split('.'))) + 'T12:00:00.000000'",
                                     ).to_dict(),
                                     "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
                                 },
