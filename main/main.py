@@ -104,29 +104,61 @@ def main():
             print("=" * 16)
             print(f"Processing status_history for {uid}")
             logger.set_file(config.DATA_FOLDER / f"log.status.{uid}.txt", clear=True)
+
+            # Re‑fill the full template for this uid (same as in step 2)
+            try:
+                data_template = DataTemplate(copy.deepcopy(data_template_json))
+                clear_validation_errors()
+                data_template.fill_template(db_connector, ind=uid)
+                # The filled data now contains the full structure, including multiple statusHistory entries
+                full_data = data_template.data
+            except Exception as e:
+                # If the main template cannot be filled, we cannot generate any status XML.
+                # Mark all status entries as failed with this error.
+                logger.log(f"Failed to fill main template for {uid} while processing status: {e}", force_print=True)
+                for entry in status_entries:
+                    tracker.update_status_history_entry(uid, entry["parent_number"],
+                                                        status="VAL_FAIL",
+                                                        error_text=f"Main template fill failed: {e}")
+                logger.set_file(None)
+                continue
+
+            # Process each status entry individually
             for entry in status_entries:
                 parent = entry["parent_number"]
                 try:
-                    # Generate the status data dict
+                    # Generate the status data dict for this parent
                     status_dict = generate_status_history_dict(db_connector, parent)
 
-                    # Convert to XML – we need a root element. Assume <StatusHistory> with same namespace.
-                    # This can be customised later; here we wrap the dict in a simple root.
-                    xml_data = xml_gen.json_to_xml({"StatusHistory": status_dict}, root_tag="StatusHistory")
+                    # Clone the full filled data
+                    cloned_data = copy.deepcopy(full_data)
+
+                    # Replace the statusHistory list with a list containing only this status
+                    # Path: CreateOrdersRequest.orders.order[0].statusHistoryList.statusHistory
+                    try:
+                        order_list = cloned_data["CreateOrdersRequest"]["orders"]["order"]
+                        if not isinstance(order_list, list) or len(order_list) == 0:
+                            raise Exception("Invalid structure: order list missing")
+                        order = order_list[0]
+                        status_history_list = order["statusHistoryList"]["statusHistory"]
+                        # Replace with a single-element list
+                        order["statusHistoryList"]["statusHistory"] = [status_dict]
+                    except KeyError as e:
+                        raise Exception(f"Could not locate statusHistoryList in template: {e}")
+
+                    # Convert to XML
+                    xml_data = xml_gen.json_to_xml(cloned_data)  # root tag defaults to "ElkOrderRequest"
                     xml_path = config.DATA_FOLDER / f"{uid}.{parent}.xml"
                     with open(xml_path, "w", encoding="utf-8") as f:
                         f.write(xml_data)
 
-                    # Validate the generated XML (if schema available) or use custom validation
-                    # For now, we rely on the same validation functions used inside status_dict generation.
-                    # If any validation error occurred, they would have been added to the global errors.
+                    # Check for custom validation errors (from generate_status_history_dict or elsewhere)
                     errors = get_validation_errors()
                     if errors:
                         error_msg = "Custom validation errors for status:\n" + "\n".join(errors)
                         raise Exception(error_msg)
 
-                    # Optionally validate against a separate XSD for status updates
-                    # (if we have one, we could call xml_gen.validate_xml again)
+                    # Optionally validate against XSD (if you have a schema for status updates, you could call xml_gen.validate_xml again)
                     tracker.update_status_history_entry(uid, parent,
                                                         status="VAL_SUCCESS",
                                                         path_to_xml=str(xml_path),
