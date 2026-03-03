@@ -97,7 +97,7 @@ def main():
 
         # ----- Step 3: process status_history entries (for records with any status) -----
         # We'll process all uids that have status_history entries with status NEW or VAL_FAIL
-        for uid, rec in tracker.data.items():
+        for uid, rec in tqdm(tracker.data.items()):
             status_entries = tracker.get_status_history_entries_by_status(uid, "NEW", "VAL_FAIL")
             if not status_entries:
                 continue
