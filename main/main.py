@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from src.logger import logger
 from src.db_connector import DBConnector
-from src.data_template import DataTemplate, clear_validation_errors, get_validation_errors
+from src.data_template import DataTemplate, clear_validation_errors, get_validation_errors, generate_status_history_dict
 from src.xml_generator import XMLGenerator
 from src.tracker import RecordTracker
 
@@ -44,14 +44,14 @@ def main():
     # Main loop – runs forever, checking for new records and processing them
     while True:
         print("\n" * 16 + "New scan")
-        # ----- Step 1: scan for new records -----
+        # ----- Step 1: scan for new records (and refresh status_history) -----
         tracker.scan_new_records(
             db_connector,
             config.MONITOR_STARTING_DATE_COL,
             config.MONITOR_STARTING_DATE_VAL
         )
 
-        # ----- Step 2: process records with status NEW or FORM_FAIL -----
+        # ----- Step 2: process records with status NEW or FORM_FAIL (main XML) -----
         for uid, rec in tqdm(tracker.get_records_by_status("NEW", "FORM_FAIL")):
             print("=" * 16)
             print(f"Tracking {uid} status={rec['status']}")
@@ -95,26 +95,78 @@ def main():
 
             logger.set_file(None)   # close per‑record log
 
-        # ----- Step 3: check FORM_SUCC records for Kind = 150002 -----
-        for uid, rec in tqdm(tracker.get_records_by_status("FORM_SUCC")):
+        # ----- Step 3: process status_history entries (for records with any status) -----
+        # We'll process all uids that have status_history entries with status NEW or VAL_FAIL
+        for uid, rec in tracker.data.items():
+            status_entries = tracker.get_status_history_entries_by_status(uid, "NEW", "VAL_FAIL")
+            if not status_entries:
+                continue
             print("=" * 16)
-            print(f"Tracking {uid} status={rec['status']}")
-            try:
-                kinds = db_connector.get_kinds_for_object_parent(uid)
-                if "150002" in kinds:
-                    tracker.update_record(uid, status="150002")
-                    logger.log(f"Record {uid} has Kind=150002, status updated.", force_print=True)
-                else:
-                    logger.log(f"Record {uid} DOESN'T have Kind=150002, skipping.", force_print=True)
-            except Exception:
-                # Log error but do not change status – will be retried next cycle?
-                # Here we simply log it; you might want to set a temporary error field.
-                logger.log(f"Exception checking Kind for {uid}:\n{traceback.format_exc()}", force_print=True)
+            print(f"Processing status_history for {uid}")
+            logger.set_file(config.DATA_FOLDER / f"log.status.{uid}.txt", clear=True)
+            for entry in status_entries:
+                parent = entry["parent_number"]
+                try:
+                    # Generate the status data dict
+                    status_dict = generate_status_history_dict(db_connector, parent)
 
-        # ----- Step 4: check FORM_SUCC records for Kind = 150002 -----
-        for uid, rec in tqdm(tracker.get_records_by_status("150002")):
-            print("=" * 16)
-            print(f"NEED TO SEND {rec['path_to_xml']}")
+                    # Convert to XML – we need a root element. Assume <StatusHistory> with same namespace.
+                    # This can be customised later; here we wrap the dict in a simple root.
+                    xml_data = xml_gen.json_to_xml({"StatusHistory": status_dict}, root_tag="StatusHistory")
+                    xml_path = config.DATA_FOLDER / f"{uid}.{parent}.xml"
+                    with open(xml_path, "w", encoding="utf-8") as f:
+                        f.write(xml_data)
+
+                    # Validate the generated XML (if schema available) or use custom validation
+                    # For now, we rely on the same validation functions used inside status_dict generation.
+                    # If any validation error occurred, they would have been added to the global errors.
+                    errors = get_validation_errors()
+                    if errors:
+                        error_msg = "Custom validation errors for status:\n" + "\n".join(errors)
+                        raise Exception(error_msg)
+
+                    # Optionally validate against a separate XSD for status updates
+                    # (if we have one, we could call xml_gen.validate_xml again)
+                    tracker.update_status_history_entry(uid, parent,
+                                                        status="VAL_SUCCESS",
+                                                        path_to_xml=str(xml_path),
+                                                        error_text=None)
+                    logger.log(f"Status XML for {parent} generated and validated", force_print=True)
+
+                except Exception as e:
+                    tracker.update_status_history_entry(uid, parent,
+                                                        status="VAL_FAIL",
+                                                        error_text=str(e))
+                    logger.log(f"Exception while processing status {parent}:\n{traceback.format_exc()}", force_print=True)
+
+                # Clear validation errors after each status entry to avoid mixing
+                clear_validation_errors()
+
+            logger.set_file(None)
+
+        ## ----- Step 4: check FORM_SUCC records for Kind = 150002 (unchanged) -----
+        #for uid, rec in tqdm(tracker.get_records_by_status("FORM_SUCC")):
+        #    print("=" * 16)
+        #    print(f"Tracking {uid} status={rec['status']}")
+        #    try:
+        #        kinds = db_connector.get_kinds_for_object_parent(uid)
+        #        if "150002" in kinds:
+        #            tracker.update_record(uid, status="150002")
+        #            logger.log(f"Record {uid} has Kind=150002, status updated.", force_print=True)
+        #        else:
+        #            logger.log(f"Record {uid} DOESN'T have Kind=150002, skipping.", force_print=True)
+        #    except Exception:
+        #        logger.log(f"Exception checking Kind for {uid}:\n{traceback.format_exc()}", force_print=True)
+
+        ## ----- Step 5: check FORM_SUCC records for Kind = 150002 (unchanged) -----
+        #for uid, rec in tqdm(tracker.get_records_by_status("150002")):
+        #    print("=" * 16)
+        #    print(f"NEED TO SEND {rec['path_to_xml']}")
+        # ----- Step 5: check FORM_SUCC records for Kind = 150002 (unchanged) -----
+        for uid, rec in tqdm(tracker.get_records_by_status("FORM_SUCC")):
+            for hist in tracker.get_status_history_entries_by_status(uid, "VAL_SUCCESS")
+                print("=" * 16)
+                print(f"NEED TO SEND {rec['path_to_xml']} {hist}")
 
         # Wait before next iteration
         print("Scan finished" + "\n" * 16)

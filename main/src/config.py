@@ -22,6 +22,7 @@ TRACKER_JSON = DATA_FOLDER / "tracker.json"
 SLEEP_INTERVAL = 10
 
 CONFIG_PATH = "../config.test.yaml"
+STATUS_TEMPLATE_JSON = DATA_FOLDER / "status_template.json"
 
 
 def load_config(config_path: str) -> dict:
