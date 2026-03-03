@@ -7,21 +7,24 @@ from src.validate import validate_list_functions
 
 
 class DataTemplateHowToElement:
-    def __init__(self, table_name: str, column_name: str, condition_column: str = None, after: str = None, clause_after_when: str = None):
+    def __init__(self, table_name: str, column_name: str, condition_column: str = None,
+                 after: str = None, clause_after_when: str = None, multiple: bool = False):
         self.table_name = table_name
         self.column_name = column_name
         self.condition_column = condition_column
         self.after = after
         self.clause_after_when = clause_after_when
+        self.multiple = multiple
 
     @staticmethod
     def from_dict(obj: dict) -> Self:
         dthte = DataTemplateHowToElement(
             table_name=obj["table_name"],
             column_name=obj["column_name"],
-            condition_column=obj.get("condition_column", None),
-            after=obj.get("after", None),
-            clause_after_when=obj.get("clause_after_when", None),
+            condition_column=obj.get("condition_column"),
+            after=obj.get("after"),
+            clause_after_when=obj.get("clause_after_when"),
+            multiple=obj.get("multiple", False),
         )
         return dthte
 
@@ -32,28 +35,45 @@ class DataTemplateHowToElement:
             "condition_column": self.condition_column,
             "after": self.after,
             "clause_after_when": self.clause_after_when,
+            "multiple": self.multiple,
         }
         result = {k: result[k] for k in result if result[k] is not None}
         return result
 
     def to_value(self, db_connector: DBConnector, condition_value: Any):
-        condition_column = (self.condition_column if self.condition_column is not None else db_connector.get_index_column_name())
+        condition_column = (self.condition_column if self.condition_column is not None
+                            else db_connector.get_index_column_name())
         req = f"""
             SELECT "{self.column_name}" FROM "{self.table_name}"
             WHERE "{condition_column}" = '{condition_value}' {self.clause_after_when if self.clause_after_when is not None else ''}
         """
         data = db_connector.fetchall(req)
         logger.log("Debug", "to_value\n", data, "\n", req)
-        if not data or data[0] is None or data[0][0] is None:
-            return None
-        data = data[0][0]
-        if self.after is not None:
-            try:
-                foo = eval(f"lambda x: ({self.after})")
-                data = foo(data)
-            except Exception:
-                raise Exception(f"{data} could not be formatted using after={self.after}")
-        return data
+
+        if self.multiple:
+            # Return a list of first column values, applying `after` to each if present
+            if not data:
+                return []
+            values = [row[0] for row in data if row[0] is not None]
+            if self.after is not None:
+                try:
+                    foo = eval(f"lambda x: ({self.after})")
+                    values = [foo(v) for v in values]
+                except Exception:
+                    raise Exception(f"Elements in {values} could not be formatted using after={self.after}")
+            return values
+        else:
+            # Original single-value behaviour
+            if not data or data[0] is None or data[0][0] is None:
+                return None
+            val = data[0][0]
+            if self.after is not None:
+                try:
+                    foo = eval(f"lambda x: ({self.after})")
+                    val = foo(val)
+                except Exception:
+                    raise Exception(f"{val} could not be formatted using after={self.after}")
+            return val
 
 
 _validation_errors = []
@@ -215,6 +235,41 @@ class ConditionalElement:
             return None   # signal that this branch should be omitted
 
 
+class ListElement:
+    def __init__(self, howto: list[DataTemplateHowToElement], template, after: str = None):
+        self.howto = howto
+        self.template = template
+        self.after = after
+
+    @staticmethod
+    def from_dict(obj: dict):
+        data = obj['_ListElement_']
+        howto = [DataTemplateHowToElement.from_dict(h) for h in data['howto']]
+        template = DataTemplate._convert_special_nodes(data['template'])
+        after = data.get('after')
+        return ListElement(howto, template, after)
+
+    def to_dict(self) -> dict:
+        result = {
+            'howto': [h.to_dict() for h in self.howto],
+            'template': DataTemplate._convert_special_nodes(self.template, to_dict=True),
+        }
+        if self.after is not None:
+            result['after'] = self.after
+        return {'_ListElement_': result}
+
+    def to_value(self, db_connector: DBConnector, ind: Any):
+        # Evaluate howto chain to get a list
+        last = ind
+        for howto_el in self.howto:
+            val = howto_el.to_value(db_connector, last)
+            last = val
+        # last must be a list
+        if not isinstance(last, list):
+            raise Exception(f"ListElement expected a list from howto, got {type(last)}")
+        return last   # raw list of values
+
+
 class DataTemplate:
     def __init__(self, data_template_json: dict):
         # Recursively convert all special markers to objects
@@ -238,6 +293,10 @@ class DataTemplate:
                 if to_dict:
                     return node
                 return ConditionalElement.from_dict(node)
+            if '_ListElement_' in node:
+                if to_dict:
+                    return node
+                return ListElement.from_dict(node)
 
             # Regular dict – recurse into values
             new_dict = {}
@@ -285,6 +344,22 @@ class DataTemplate:
                 return None
             # The result may contain more special nodes – process them
             return self._fill_recursive(result, db_connector, ind)
+
+        elif isinstance(node, ListElement):
+            values = node.to_value(db_connector, ind)
+            results = []
+            for val in values:
+                filled = self._fill_recursive(node.template, db_connector, val)
+                if filled is not None:
+                    results.append(filled)
+            # apply optional `after` to each element
+            if node.after is not None:
+                try:
+                    foo = eval(f"lambda x: ({node.after})")
+                    results = [foo(r) for r in results]
+                except Exception:
+                    raise Exception(f"Could not apply after={node.after} to list results")
+            return results
 
         else:
             # Plain value (str, int, etc.)
@@ -542,27 +617,39 @@ class DataTemplate:
                             "ApplicationAcceptance": "-1",
                         },
                         "statusHistoryList": {
-                            "statusHistory": [{
-                                "status": DataTemplateElement(
-                                    example="TODOTODOTODO",
-                                    howto=[
-                                        DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
-                                        # DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects", condition_column="Number"),
-                                        DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes", condition_column="ParentNumber", clause_after_when="AND \"Name\" = '%Code%'"),
-                                    ],
-                                    after="str(x)",
-                                ).to_dict(),
-                                "statusDate": DataTemplateElement(
-                                    example="2025-12-12T10:32:23.042643",
-                                    howto=[
-                                        DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
-                                        # DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects", condition_column="Number"),
-                                        DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes", condition_column="ParentNumber", clause_after_when="AND \"Name\" = '%Date%'"),
-                                    ],
-                                    after="str(x) + 'T12:00:00.000000'",
-                                ).to_dict(),
-                                "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
-                            }]
+                            "statusHistory": ListElement(
+                                howto=[
+                                    # 1. get object_uid from fips_rutrademark
+                                    DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                    # 2. get parent number from Objects where Number = object_uid
+                                    DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
+                                                             condition_column="Number"),
+                                    # 3. get all child Numbers where ParentNumber = parent number (multiple)
+                                    DataTemplateHowToElement(column_name="Number", table_name="Objects",
+                                                             condition_column="ParentNumber", multiple=True),
+                                ],
+                                template={
+                                    "status": DataTemplateElement(
+                                        example="TODO",
+                                        howto=[
+                                            DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
+                                                                     condition_column="ParentNumber",
+                                                                     clause_after_when='AND "Name" = \'OCCode\''),
+                                        ],
+                                        after="str(x)",
+                                    ).to_dict(),
+                                    "statusDate": DataTemplateElement(
+                                        example="2025-12-12T10:32:23.042643",
+                                        howto=[
+                                            DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
+                                                                     condition_column="ParentNumber",
+                                                                     clause_after_when='AND "Name" = \'OCDate\''),
+                                        ],
+                                        after="str(x) + 'T12:00:00.000000'",
+                                    ).to_dict(),
+                                    "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
+                                },
+                            ).to_dict(),
                         },
                     }]
                 }

@@ -179,7 +179,7 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
     if not SEARCH_ATTRIBUTES_SAMPLES:
         raise Exception("Cannot add search attributes: no sample data available.")
 
-    # 1. Choose a random template from CSV
+    # 1. Choose random templates from CSV
     template_rutrademark = random.choice(FIPS_RUTRADEMARK_SAMPLES)
     template_contact = random.choice(FIPS_CONTACT_SAMPLES)
     template_object = random.choice(OBJECTS_SAMPLES)
@@ -210,7 +210,7 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
             else:
                 raise Exception(f"Unknown {new_applicant_type_str=}")
 
-    # 3. Build trademark row (copy most fields, override a few)
+    # 3. Build trademark row
     trademark = template_rutrademark.copy()
     trademark['rutmk_uid'] = new_trademark_uid
     trademark['object_uid'] = new_object_uid
@@ -221,7 +221,6 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
     trademark['update_time'] = now()
     trademark['delete_time'] = None
     trademark['effective_date'] = None
-    # Keep other fields as in template
 
     # 4. Build contact row
     contact = template_contact.copy()
@@ -232,11 +231,11 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
         contact['snils'] = snils if snils or no_input else (get_snils() if select_binary("Add СНИЛС? ") else None)
         contact['inn'] = inn if inn or no_input else (get_inn(new_applicant_type_str) if select_binary("Add ИНН? ") else None)
     elif new_applicant_type_str == "UL":
-        contact['ogrn'] = ogrn if ogrn or no_input else (get_ogrn() if select_binary("Add ОГРН? ") else None)
+        contact['ogrn'] = ogrn if ogrn or no_input else (get_ogrn("UL") if select_binary("Add ОГРН? ") else None)
         contact['inn'] = inn if inn or no_input else (get_inn(new_applicant_type_str) if select_binary("Add ИНН? ") else None)
         contact['customer_number'] = kpp if kpp or no_input else (get_kpp() if select_binary("Add КПП? ") else None)
     elif new_applicant_type_str == "IP":
-        contact['ogrn'] = ogrn if ogrn or no_input else (get_ogrn() if select_binary("Add ОГРН? ") else None)
+        contact['ogrn'] = ogrn if ogrn or no_input else (get_ogrn("IP") if select_binary("Add ОГРН? ") else None)
         contact['inn'] = inn if inn or no_input else (get_inn(new_applicant_type_str) if select_binary("Add ИНН? ") else None)
     else:
         if not no_input:
@@ -244,7 +243,6 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
     contact['language_code'] = 'ru'
     contact['update_time'] = now()
     contact['delete_time'] = None
-    # Keep other fields as in template
 
     # 5. Build contact-trademark connection row
     rutmkapplicant = {
@@ -252,16 +250,23 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
         'rutmk_uid': new_trademark_uid,
     }
 
-    # 5. Build object row
-    obj = template_object.copy()
-    obj['Number'] = new_object_uid
-    obj['ParentNumber'] = new_object_parent_uid
-    obj['UpdateDate'] = now()
-    obj['CreatedDate'] = now()
-    obj['Kind'] = 150000
-    # Keep other fields as in template
+    # 6. Build PARENT Objects row (new)
+    parent_obj = template_object.copy()
+    parent_obj['Number'] = new_object_parent_uid
+    parent_obj['ParentNumber'] = None          # root parent, adjust if needed
+    parent_obj['UpdateDate'] = now()
+    parent_obj['CreatedDate'] = now()
+    parent_obj['Kind'] = 150001                # typical parent kind
 
-    # 6. Build search attributes row
+    # 7. Build CHILD Objects row (linked to trademark)
+    child_obj = template_object.copy()
+    child_obj['Number'] = new_object_uid
+    child_obj['ParentNumber'] = new_object_parent_uid
+    child_obj['UpdateDate'] = now()
+    child_obj['CreatedDate'] = now()
+    child_obj['Kind'] = 150000                 # typical kind for trademark object
+
+    # 8. Build search attributes rows for the CHILD object
     sa_date = template_search_attributes.copy()
     sa_date['ID'] = new_sa_date_uid
     sa_date['ParentNumber'] = new_object_uid
@@ -275,31 +280,34 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
     sa_code['Name'] = "OC.OCCode"
     sa_code['TextValue'] = random.choice(OCCODES)
     sa_code['CreatedDate'] = now()
-    # Keep other fields as in template
 
-    # 7. Insert all rows
+    # 9. Insert all rows
     try:
+        # Insert parent object first (no FK dependency)
+        insert_dict(cursor, 'Objects', parent_obj)
         insert_dict(cursor, 'fips_rutrademark', trademark)
         insert_dict(cursor, 'fips_contact', contact)
-        insert_dict(cursor, 'Objects', obj)
+        insert_dict(cursor, 'Objects', child_obj)
         insert_dict(cursor, 'fips_rutmkapplicant', rutmkapplicant)
         insert_dict(cursor, 'SearchAttributes', sa_date)
         insert_dict(cursor, 'SearchAttributes', sa_code)
         print(f"\n{new_applicant_name}")
         print(f"✅ Added trademark {trademark}")
         print(f"✅ Added contact {contact} for this applicant")
-        print(f"✅ Added object {obj} for this trademark")
-        print(f"✅ Added SearchAttribute {sa_date} for this parent (parent: {new_object_uid})")
-        print(f"✅ Added SearchAttribute {sa_code} for this parent (parent: {new_object_uid})")
+        print(f"✅ Added parent object {parent_obj['Number']} (kind={parent_obj['Kind']})")
+        print(f"✅ Added child object {child_obj['Number']} (kind={child_obj['Kind']}) linked to trademark")
+        print(f"✅ Added SearchAttribute {sa_date} for child object")
+        print(f"✅ Added SearchAttribute {sa_code} for child object")
     except Exception as e:
         print(f"❌ Database error: {e}")
         return
 
-    # 8. Remember for later operations
+    # 10. Remember for later operations
     added_trademarks.append({
         'trademark_row': trademark,
         'contact_row': contact,
-        'object_row': obj,
+        'parent_object_row': parent_obj,      # new
+        'child_object_row': child_obj,
         'search_attribute_date': sa_date,
         'search_attribute_code': sa_code,
     })
@@ -313,24 +321,27 @@ def op_add_object_trigger(cursor, parent_uuid: str = None):
         print("No parent Objects available.")
         return
 
-    # 1. Choose a random template from CSV
+    # 1. Choose random templates from CSV
     template_object = random.choice(OBJECTS_SAMPLES)
+    template_search_attributes = random.choice(SEARCH_ATTRIBUTES_SAMPLES)
 
-    # 2. Select parent
+    # 2. Select parent (the parent object inserted in op_add_base)
     def obj_display(trademark):
         t = trademark['trademark_row']
-        o = trademark['object_row']
-        return f"{o['Number']} (parent={o['ParentNumber']}, applicant={t['applicants']})"
+        p = trademark['parent_object_row']      # now we have parent object stored
+        return f"Parent: {p['Number']} (kind={p['Kind']}) – trademark: {t['applicants']}"
     if not parent_uuid:
-        parent = select_from_list("Choose parent Object (by index): ", added_trademarks, obj_display)
-        if not parent:
+        parent_trademark = select_from_list("Choose parent Object (by index): ", added_trademarks, obj_display)
+        if not parent_trademark:
             return
-        parent_uuid = parent['object_row']['ParentNumber']
+        parent_uuid = parent_trademark['parent_object_row']['Number']
 
     # 3. Generate new UUID for this child Object
     new_object_uid = new_uuid()
+    new_sa_date_uid = new_uuid()
+    new_sa_code_uid = new_uuid()
 
-    # 4. Build object row
+    # 4. Build object row (Kind = 150002)
     obj = template_object.copy()
     obj['Number'] = new_object_uid
     obj['ParentNumber'] = parent_uuid
@@ -339,10 +350,29 @@ def op_add_object_trigger(cursor, parent_uuid: str = None):
     obj['Kind'] = 150002
     # Keep other fields as in template
 
-    # 5. Insert all rows
+    # 5. Build search attributes rows for the new object
+    sa_date = template_search_attributes.copy()
+    sa_date['ID'] = new_sa_date_uid
+    sa_date['ParentNumber'] = new_object_uid
+    sa_date['Name'] = "OC.OCDate"
+    sa_date['TextValue'] = now()[:10]
+    sa_date['CreatedDate'] = now()
+
+    sa_code = template_search_attributes.copy()
+    sa_code['ID'] = new_sa_code_uid
+    sa_code['ParentNumber'] = new_object_uid
+    sa_code['Name'] = "OC.OCCode"
+    sa_code['TextValue'] = random.choice(OCCODES)
+    sa_code['CreatedDate'] = now()
+
+    # 6. Insert rows
     try:
         insert_dict(cursor, 'Objects', obj)
-        print(f"✅ Added child Object {new_object_uid} with parent {parent_uuid}")
+        insert_dict(cursor, 'SearchAttributes', sa_date)
+        insert_dict(cursor, 'SearchAttributes', sa_code)
+        print(f"✅ Added child Object {new_object_uid} with parent {parent_uuid} (kind=150002)")
+        print(f"✅ Added SearchAttribute (OCDate) for this object")
+        print(f"✅ Added SearchAttribute (OCCode) for this object")
     except Exception as e:
         print(f"❌ Database error: {e}")
         return
