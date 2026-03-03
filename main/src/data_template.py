@@ -636,7 +636,7 @@ class DataTemplate:
                                                                      condition_column="ParentNumber",
                                                                      clause_after_when='AND "Name" = \'OCCode\''),
                                         ],
-                                        after="str(x)",
+                                        after="{'004':1004,'010':2010,'700':'3700','730':4730,'940':5940}.get(str(x), None)",
                                     ).to_dict(),
                                     "statusDate": DataTemplateElement(
                                         example="2025-12-12T10:32:23.042643",
