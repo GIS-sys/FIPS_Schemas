@@ -14,7 +14,7 @@ DB_NAME = "uad_int"
 DB_USER = "gegorov"
 DB_PASS = "87zerkaLo22"
 
-MONITOR_STARTING_DATE_VAL = "2025-06-15"
+MONITOR_STARTING_DATE_VAL = "2026-02-15"
 MONITOR_STARTING_DATE_COL = "appl_receiving_date"
 
 # Add these lines at the end of config.py

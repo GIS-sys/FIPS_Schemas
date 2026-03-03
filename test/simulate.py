@@ -289,7 +289,7 @@ def op_add_base(cursor, new_applicant_type_str: str = None, new_applicant_name: 
     })
 
 # ========== Operation 2: Add another Object with Kind=150002 ==========
-def op_add_object_trigger(cursor, parent_uuid: str = None):
+def op_add_object_trigger(cursor, parent_uuid: str = None, kind: int = 150002):
     """Insert a new Object row with a new Number and an existing parent."""
     if not OBJECTS_SAMPLES:
         raise Exception("Cannot add object: no sample data available.")
@@ -323,21 +323,22 @@ def op_add_object_trigger(cursor, parent_uuid: str = None):
     obj['ParentNumber'] = parent_uuid
     obj['UpdateDate'] = now()
     obj['CreatedDate'] = now()
-    obj['Kind'] = 150002
+    obj['Kind'] = kind
     # Keep other fields as in template
 
     # 5. Build search attributes rows for the new object
     sa_date = template_search_attributes.copy()
     sa_date['ID'] = new_sa_date_uid
     sa_date['ParentNumber'] = new_object_uid
-    sa_date['Name'] = "OC.OCDate"
+    sa_date['Name'] = "OCDate"
     sa_date['TextValue'] = now()[:10]
+    sa_date['TextValue'] = '.'.join(reversed(sa_date['TextValue'].split('-')))
     sa_date['CreatedDate'] = now()
 
     sa_code = template_search_attributes.copy()
     sa_code['ID'] = new_sa_code_uid
     sa_code['ParentNumber'] = new_object_uid
-    sa_code['Name'] = "OC.OCCode"
+    sa_code['Name'] = "OCCode"
     sa_code['TextValue'] = random.choice(OCCODES)
     sa_code['CreatedDate'] = now()
 
@@ -405,9 +406,8 @@ def main():
                     no_input=True,
                 )
 
-            # Define how many extra objects to add for each base user (1, 2, or 3)
-            # Cycle through 1,2,3 so that some get one, some get two, some get three
-            object_counts = [(i % 3) + 1 for i in range(len(BASE_USERS))]
+            # Define how many extra objects to add for each base user (0 - 3)
+            object_counts = [(i % 4) for i in range(len(BASE_USERS))]
 
             # For each added trademark, add the specified number of objects under its parent
             for i, trademark_info in enumerate(added_trademarks):

@@ -626,7 +626,7 @@ class DataTemplate:
                                                              condition_column="Number"),
                                     # 3. get all child Numbers where ParentNumber = parent number (multiple)
                                     DataTemplateHowToElement(column_name="Number", table_name="Objects",
-                                                             condition_column="ParentNumber", multiple=True, clause_after_when='AND "Kind" = 150002'),
+                                                             condition_column="ParentNumber", multiple=True, clause_after_when='AND "Kind" = \'150002\''),
                                 ],
                                 template={
                                     "status": DataTemplateElement(
