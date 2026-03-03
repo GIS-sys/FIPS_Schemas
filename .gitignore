@@ -2,3 +2,7 @@
 
 config.prod.yaml
 
+**/tmp/
+**/*.tmp
+**/tmp.*
+
