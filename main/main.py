@@ -166,7 +166,7 @@ def main():
         for uid, rec in tqdm(tracker.get_records_by_status("FORM_SUCC")):
             for hist in tracker.get_status_history_entries_by_status(uid, "VAL_SUCCESS"):
                 print("=" * 16)
-                print(f"NEED TO SEND {rec['path_to_xml']} {hist}")
+                print(f"NEED TO SEND {hist['path_to_xml']}")
 
         # Wait before next iteration
         print("Scan finished" + "\n" * 16)
