@@ -71,13 +71,13 @@ CREATE TABLE table_5col (id SERIAL PRIMARY KEY, first_name VARCHAR(50), last_nam
 INSERT INTO table_2col (name) VALUES ('Alice'), ('Bob'), ('Charlie'), ('Diana'), ('Eve');
 
 -- Insert data into table_3col
-INSERT INTO table_3col (product, price) VALUES 
-    ('Laptop', 999.99), ('Mouse', 29.99), ('Keyboard', 79.99), 
-    ('Monitor', 299.99), ('Headphones', 89.99), ('Webcam', 69.99), 
+INSERT INTO table_3col (product, price) VALUES
+    ('Laptop', 999.99), ('Mouse', 29.99), ('Keyboard', 79.99),
+    ('Monitor', 299.99), ('Headphones', 89.99), ('Webcam', 69.99),
     ('USB Cable', 9.99);
 
 -- Insert data into table_5col
-INSERT INTO table_5col (first_name, last_name, email, active) VALUES 
+INSERT INTO table_5col (first_name, last_name, email, active) VALUES
     ('John', 'Smith', 'john.smith@email.com', true),
     ('Jane', 'Doe', 'jane.doe@email.com', true),
     ('Bob', 'Johnson', 'bob.johnson@email.com', false),
@@ -94,4 +94,24 @@ SELECT 'table_3col', count(*) FROM table_3col
 UNION ALL
 SELECT 'table_5col', count(*) FROM table_5col;
 ```
+
+# About
+
+This project is a **database‑to‑XML pipeline** that continuously monitors a PostgreSQL database, extracts application data (`fips_rutrademark`), and generates validated XML files for the **ELK (ЕЛК)** status service.
+
+It is designed to handle two types of XML outputs:
+- **CreateOrdersRequest** – full order creation for new applications.
+- **UpdateOrdersRequest** – status‑only updates for related records with `Kind = '150002'`.
+
+The system uses a **JSON template** with declarative rules (`howto`, `ConditionalElement`, `ListElement`) to map database fields to the target XML structure. Each processed record is tracked in a persistent JSON file, with states like `NEW`, `FORM_SUCC`, `FORM_FAIL`, `VAL_SUCCESS`, `VAL_FAIL`.
+
+Key features:
+- Scans for new records using a configurable date column and starting date.
+- Deep‑copies the template for each record and fills it via SQL queries.
+- Generates pretty‑printed XML and validates against an XSD schema.
+- Handles multiple status history entries per parent application.
+- Runs in an infinite loop with a configurable sleep interval.
+- Logs per‑record and per‑status details for debugging.
+
+Used for integrating external information systems with the EPGU/ELK service.
 
