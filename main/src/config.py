@@ -15,18 +15,35 @@ MONITOR_STARTING_DATE_COL = "appl_receiving_date"
 TRACKER_JSON = DATA_FOLDER / "tracker.json"
 SLEEP_INTERVAL = 10
 
-CONFIG_PATH = "../config.test.yaml"
 STATUS_TEMPLATE_JSON = DATA_FOLDER / "status_template.json"
 
 
-def load_config_db_appl(config_path: str) -> dict:
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-    return {
-        "host": config["db_appl_host"],
-        "port": config["db_appl_port"],
-        "dbname": config["db_appl_dbname"],
-        "user": config["db_appl_user"],
-        "password": config["db_appl_password"]
-    }
 
+class LoadedConfig:
+    def __init__(self, config_path: str):
+        print(f"Loading config: {config_path}")
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+        self.db_appl_host = config["db_appl_host"]
+        self.db_appl_port = config["db_appl_port"]
+        self.db_appl_dbname = config["db_appl_dbname"]
+        self.db_appl_user = config["db_appl_user"]
+        self.db_appl_password = config["db_appl_password"]
+
+        self.proxy_ip = config["proxy_ip"]
+        self.proxy_ssh_user = config["proxy_ssh_user"]
+        self.proxy_ssh_password = config["proxy_ssh_password"]
+
+        self.api_ip = config["api_ip"]
+        self.api_port = config["api_port"]
+        self.api_bind_port = config["api_bind_port"]
+        self.api_ssh_user = config["api_ssh_user"]
+        self.api_ssh_password = config["api_ssh_password"]
+
+        self.db_adapter_ip = config["db_adapter_ip"]
+        self.db_adapter_port = config["db_adapter_port"]
+        self.db_adapter_dbname = config["db_adapter_dbname"]
+        self.db_adapter_user = config["db_adapter_user"]
+        self.db_adapter_password = config["db_adapter_password"]
+
+loaded_config = LoadedConfig("../config.test.yaml")
