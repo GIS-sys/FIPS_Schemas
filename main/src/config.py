@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import yaml
 
@@ -46,4 +47,9 @@ class LoadedConfig:
         self.db_adapter_user = config["db_adapter_user"]
         self.db_adapter_password = config["db_adapter_password"]
 
-loaded_config = LoadedConfig("../config.test.yaml")
+CONFIG_PATH_PROD = "../config.prod.yaml"
+CONFIG_PATH_TEST = "../config.test.yaml"
+if os.path.exists(CONFIG_PATH_PROD):
+    loaded_config = LoadedConfig(CONFIG_PATH_PROD)
+else:
+    loaded_config = LoadedConfig(CONFIG_PATH_TEST)
