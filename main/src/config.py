@@ -8,12 +8,6 @@ FILE_SCHEMAS_XSD = DATA_FOLDER / "schemas.xsd"
 FILE_TEMPLATE_JSON = DATA_FOLDER / "template.json"
 FILE_DB_DEBUG = DATA_FOLDER / "_db_debug.txt"
 
-DB_HOST = "10.2.53.15"
-DB_PORT = 5432
-DB_NAME = "uad_int"
-DB_USER = "gegorov"
-DB_PASS = "87zerkaLo22"
-
 MONITOR_STARTING_DATE_VAL = "2026-02-15"
 MONITOR_STARTING_DATE_COL = "appl_receiving_date"
 
@@ -25,14 +19,14 @@ CONFIG_PATH = "../config.test.yaml"
 STATUS_TEMPLATE_JSON = DATA_FOLDER / "status_template.json"
 
 
-def load_config(config_path: str) -> dict:
+def load_config_db_appl(config_path: str) -> dict:
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
     return {
-        "host": config["host"],
-        "port": config["port"],
-        "dbname": config["dbname"],
-        "user": config["user"],
-        "password": config["password"]
+        "host": config["db_appl_host"],
+        "port": config["db_appl_port"],
+        "dbname": config["db_appl_dbname"],
+        "user": config["db_appl_user"],
+        "password": config["db_appl_password"]
     }
 

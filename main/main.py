@@ -17,7 +17,7 @@ import src.config as config
 def main():
     print(f"Connecting to {config.CONFIG_PATH}")
     # Initialize database connection
-    db_connector = DBConnector(**config.load_config(config.CONFIG_PATH))
+    db_connector = DBConnector(**config.load_config_db_appl(config.CONFIG_PATH))
 
     # Write debug info once (optional)
     info = db_connector.get_debug_info()
