@@ -365,7 +365,7 @@ def main():
     print("=== Database Simulator ===")
     print("Connecting to database...")
     try:
-        conn = psycopg2.connect(**util.load_config(config_path=util.CONFIG_PATH_TEST))
+        conn = psycopg2.connect(**util.load_config_db_appl(config_path=util.CONFIG_PATH_TEST))
         conn.autocommit = True
         cursor = conn.cursor()
     except Exception as e:

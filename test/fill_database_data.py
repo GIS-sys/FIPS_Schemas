@@ -51,7 +51,7 @@ def fill_table(cur, table: str, path: str):
 
 
 def main():
-    DB_CONFIG = util.load_config(config_path=util.CONFIG_PATH_TEST)
+    DB_CONFIG = util.load_config_db_appl(config_path=util.CONFIG_PATH_TEST)
     create_database(DB_CONFIG)
 
     with psycopg2.connect(**DB_CONFIG) as conn:

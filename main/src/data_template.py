@@ -6,6 +6,55 @@ from src.logger import logger
 from src.validate import validate_list_functions
 
 
+def generate_status_history_dict(db_connector: DBConnector, parent_number: str) -> dict:
+    """
+    Given a ParentNumber (Objects.Number), query SearchAttributes for OCCode and OCDate,
+    apply the same transformations as in the statusHistory template, and return a dict
+    with keys 'status', 'statusDate', and 'MessageType'.
+    """
+    # Query for OCCode
+    occode_query = """
+        SELECT "TextValue" FROM "SearchAttributes"
+        WHERE "ParentNumber" = %s AND "Name" = 'OCCode'
+    """
+    rows = db_connector.fetchall(occode_query, (parent_number,))
+    occode = rows[0][0] if rows else None
+    # Apply mapping as in the template's after
+    status_map = {'004': 1004, '010': 2010, '700': '3700', '730': 4730, '940': 5940}
+    status = status_map.get(str(occode), None)
+
+    # Query for OCDate
+    ocdate_query = """
+        SELECT "TextValue" FROM "SearchAttributes"
+        WHERE "ParentNumber" = %s AND "Name" = 'OCDate'
+    """
+    rows = db_connector.fetchall(ocdate_query, (parent_number,))
+    ocdate = rows[0][0] if rows else None
+    # Format date as in template's after: reverse dots and add time
+    if ocdate:
+        try:
+            # ocdate is expected as "DD.MM.YYYY"
+            date_parts = ocdate.split('.')
+            if len(date_parts) == 3:
+                status_date = f"{date_parts[2]}-{date_parts[1]}-{date_parts[0]}T12:00:00.000000"
+            else:
+                status_date = None
+        except:
+            status_date = None
+    else:
+        status_date = None
+
+    # MessageType as in template (fixed string)
+    message_type = "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>"
+
+    result = {
+        "status": status,
+        "statusDate": status_date,
+        "MessageType": message_type
+    }
+    return result
+
+
 class DataTemplateHowToElement:
     def __init__(self, table_name: str, column_name: str, condition_column: str = None,
                  after: str = None, clause_after_when: str = None, multiple: bool = False):

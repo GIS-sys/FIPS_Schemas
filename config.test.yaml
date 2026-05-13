@@ -1,5 +1,21 @@
-host: localhost
-port: 5432
-dbname: fips_test_db
-user: fips_test_user
-password: fips_test_pass
+db_appl_host: localhost
+db_appl_port: 5432
+db_appl_dbname: fips_test_db
+db_appl_user: fips_test_user
+db_appl_password: fips_test_pass
+
+proxy_ip: none
+proxy_ssh_user: none
+proxy_ssh_password: none
+
+api_ip: none
+api_port: none
+api_bind_port: none
+api_ssh_user: none
+api_ssh_password: none
+
+db_adapter_ip: none
+db_adapter_port: none
+db_adapter_dbname: none
+db_adapter_user: none
+db_adapter_password: none

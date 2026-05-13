@@ -53,22 +53,22 @@ class DBConnector:
             self.reconnect()
             raise
 
-    def get_kinds_for_object_parent(self, rutmk_uid: str) -> list[int]:
-        """
-        Given a rutmk_uid, return all Kind values from the Objects table
-        that share the same Parent as the object linked to this rutmk_uid.
-        """
-        query = """
-            WITH obj AS (
-                SELECT object_uid FROM fips_rutrademark WHERE rutmk_uid = %s
-            )
-            SELECT o2."Kind"
-            FROM "Objects" o1
-            JOIN "Objects" o2 ON o1."ParentNumber" = o2."ParentNumber"
-            WHERE o1."Number" = (SELECT object_uid FROM obj)
-        """
-        rows = self.fetchall(query, (rutmk_uid,))
-        return [str(row[0]) for row in rows]
+    #def get_kinds_for_object_parent(self, rutmk_uid: str) -> list[int]:
+    #    """
+    #    Given a rutmk_uid, return all Kind values from the Objects table
+    #    that share the same Parent as the object linked to this rutmk_uid.
+    #    """
+    #    query = """
+    #        WITH obj AS (
+    #            SELECT object_uid FROM fips_rutrademark WHERE rutmk_uid = %s
+    #        )
+    #        SELECT o2."Kind"
+    #        FROM "Objects" o1
+    #        JOIN "Objects" o2 ON o1."ParentNumber" = o2."ParentNumber"
+    #        WHERE o1."Number" = (SELECT object_uid FROM obj)
+    #    """
+    #    rows = self.fetchall(query, (rutmk_uid,))
+    #    return [str(row[0]) for row in rows]
 
     def mark_last_index(self, last_id):
         self.index_track.add(last_id)

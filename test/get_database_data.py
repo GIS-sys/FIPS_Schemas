@@ -54,7 +54,7 @@ def archive(output_dir: str):
 
 
 def main():
-    DB_CONFIG = util.load_config(config_path=util.CONFIG_PATH_PROD)
+    DB_CONFIG = util.load_config_db_appl(config_path=util.CONFIG_PATH_PROD)
     create_folder_structure(output_dir=util.OUTPUT_DIR)
 
     with psycopg2.connect(**DB_CONFIG) as conn:
