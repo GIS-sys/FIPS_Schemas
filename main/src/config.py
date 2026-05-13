@@ -7,17 +7,11 @@ DATA_FOLDER = Path("./data")
 DATA_FOLDER.mkdir(parents=True, exist_ok=True)
 FILE_SCHEMAS_XSD = DATA_FOLDER / "schemas.xsd"
 FILE_TEMPLATE_JSON = DATA_FOLDER / "template.json"
+FILE_TEMPLATE_UPDATE_JSON = DATA_FOLDER / "template_update.json"
 FILE_DB_DEBUG = DATA_FOLDER / "_db_debug.txt"
-
-MONITOR_STARTING_DATE_VAL = "2026-02-15"
 MONITOR_STARTING_DATE_COL = "appl_receiving_date"
-
-# Add these lines at the end of config.py
 TRACKER_JSON = DATA_FOLDER / "tracker.json"
-SLEEP_INTERVAL = 10
-
 STATUS_TEMPLATE_JSON = DATA_FOLDER / "status_template.json"
-
 
 
 class LoadedConfig:
@@ -46,6 +40,14 @@ class LoadedConfig:
         self.db_adapter_dbname = config["db_adapter_dbname"]
         self.db_adapter_user = config["db_adapter_user"]
         self.db_adapter_password = config["db_adapter_password"]
+
+        self.sleep_interval = config.get("sleep_interval", 10)
+        self.monitor_starting_date = config.get("monitor_starting_date", "2025-12-31")
+        self.status_mapping = config.get("status_mapping", {})
+        self.debug = config.get("debug", {})
+        if self.debug is None:
+            self.debug = {}
+
 
 CONFIG_PATH_PROD = "../config.prod.yaml"
 CONFIG_PATH_TEST = "../config.test.yaml"

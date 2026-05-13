@@ -1,58 +1,29 @@
+from datetime import datetime, timedelta
 import traceback
 from typing import Any, Self
 
 from src.db_connector import DBConnector
 from src.logger import logger
 from src.validate import validate_list_functions
+import src.config as config
 
 
-def generate_status_history_dict(db_connector: DBConnector, parent_number: str) -> dict:
-    """
-    Given a ParentNumber (Objects.Number), query SearchAttributes for OCCode and OCDate,
-    apply the same transformations as in the statusHistory template, and return a dict
-    with keys 'status', 'statusDate', and 'MessageType'.
-    """
-    # Query for OCCode
-    occode_query = """
-        SELECT "TextValue" FROM "SearchAttributes"
-        WHERE "ParentNumber" = %s AND "Name" = 'OCCode'
-    """
-    rows = db_connector.fetchall(occode_query, (parent_number,))
-    occode = rows[0][0] if rows else None
-    # Apply mapping as in the template's after
-    status_map = {'004': 1004, '010': 2010, '700': '3700', '730': 4730, '940': 5940}
-    status = status_map.get(str(occode), None)
+def iterate_recursively_dict_list(x, path: list = []):
+    yield x, path
+    if isinstance(x, list):
+        for k, v in enumerate(x):
+            for y in iterate_recursively_dict_list(v, path + [k]):
+                yield y
+    if isinstance(x, dict):
+        for k, v in x.items():
+            for y in iterate_recursively_dict_list(v, path + [k]):
+                yield y
 
-    # Query for OCDate
-    ocdate_query = """
-        SELECT "TextValue" FROM "SearchAttributes"
-        WHERE "ParentNumber" = %s AND "Name" = 'OCDate'
-    """
-    rows = db_connector.fetchall(ocdate_query, (parent_number,))
-    ocdate = rows[0][0] if rows else None
-    # Format date as in template's after: reverse dots and add time
-    if ocdate:
-        try:
-            # ocdate is expected as "DD.MM.YYYY"
-            date_parts = ocdate.split('.')
-            if len(date_parts) == 3:
-                status_date = f"{date_parts[2]}-{date_parts[1]}-{date_parts[0]}T12:00:00.000000"
-            else:
-                status_date = None
-        except:
-            status_date = None
-    else:
-        status_date = None
 
-    # MessageType as in template (fixed string)
-    message_type = "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>"
-
-    result = {
-        "status": status,
-        "statusDate": status_date,
-        "MessageType": message_type
-    }
-    return result
+def set_value_dict_list(x, path: list, new_val: Any):
+    for k in path[:-1]:
+        x = x[k]
+    x[path[-1]] = new_val
 
 
 class DataTemplateHowToElement:
@@ -416,6 +387,23 @@ class DataTemplate:
 
     def fill_template(self, db_connector: DBConnector, ind: Any) -> Any:
         self.data = self._fill_recursive(self.data, db_connector, ind)
+        for val, path in iterate_recursively_dict_list(self.data):
+            if not isinstance(val, (list, dict)):
+                if "date" in config.loaded_config.debug.get("replace", {}):
+                    replace_kind = config.loaded_config.debug["replace"]["date"]
+                    if replace_kind == "yday":
+                        theday = datetime.now() - timedelta(days=1)
+                    else:
+                        raise Exception("Unknown debug replace date kind: {replace_kind} (can be: 'yday')")
+                    theday = theday.strftime('%Y-%m-%d')
+                    if path[-1] in ("statusDate", "requestDate"):
+                        logger.log("\n", "WARNING", "debug date substitution has been activated", force_print=True)
+                        set_value_dict_list(self.data, path, f"{theday}T00:00:00.000000")
+                if "orderNumber" in config.loaded_config.debug.get("replace", {}):
+                    replace_dict = config.loaded_config.debug["replace"]["orderNumber"]
+                    if path[-1] == "orderNumber" and str(val) in replace_dict:
+                        logger.log("\n", "WARNING", "debug orderNumber substitution has been activated", force_print=True)
+                        set_value_dict_list(self.data, path, replace_dict[str(val)])
         return ind
 
     @staticmethod
@@ -448,6 +436,7 @@ class DataTemplate:
                                                 DataTemplateHowToElement(column_name="contact_uid", table_name="fips_rutmkapplicant", condition_column="rutmk_uid"),
                                                 DataTemplateHowToElement(column_name="snils", table_name="fips_contact", condition_column="contact_uid", after="''.join(c for c in str(x) if c in '1234567890')"),
                                             ],
+                                            after="f'{str(x)[0:3]}-{str(x)[3:6]}-{str(x)[6:9]} {str(x)[9:11]}'",
                                             validate=["snils"],
                                         ).to_dict(),
                                         "lastName": DataTemplateElement(
@@ -645,7 +634,7 @@ class DataTemplate:
                         ).to_dict(),
                         "senderKpp": "773001001",
                         "senderInn": "7730176088",
-                        "serviceTargetCode": "60012726",
+                        "serviceTargetCode": "-60012726",
                         "userSelectedRegion": "00000000",
                         "orderNumber": DataTemplateElement(
                             example="2025933465",
@@ -656,7 +645,7 @@ class DataTemplate:
                         "requestDate": DataTemplateElement(
                             example="2025-12-12T10:31:23.042643",
                             howto=[
-                                DataTemplateHowToElement(column_name="appl_receiving_date", table_name="fips_rutrademark", after="str(x) + 'T12:00:00.000000'"),
+                                DataTemplateHowToElement(column_name="appl_receiving_date", table_name="fips_rutrademark", after="str(x) + 'T00:00:00.000000'"),
                             ]
                         ).to_dict(),
                         "OfficeInfo": {
@@ -678,14 +667,21 @@ class DataTemplate:
                                                              condition_column="ParentNumber", multiple=True, clause_after_when='AND "Kind" = \'150002\''),
                                 ],
                                 template={
+                                    "_debug_parent": DataTemplateElement(
+                                        example="605795c6-4a22-4633-9a65-c3d8ec882c30",
+                                        howto=[
+                                            DataTemplateHowToElement(column_name="ParentNumber", table_name="SearchAttributes",
+                                                                     condition_column="ParentNumber"),
+                                        ],
+                                    ).to_dict(),
                                     "status": DataTemplateElement(
-                                        example="TODO",
+                                        example="1",
                                         howto=[
                                             DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
                                                                      condition_column="ParentNumber",
                                                                      clause_after_when='AND "Name" = \'OCCode\''),
                                         ],
-                                        after="{'004':1004,'010':2010,'700':'3700','730':4730,'940':5940}.get(str(x), None)",
+                                        after=f"{config.loaded_config.status_mapping}.get(str(x), 'ERROR' + str(x))",
                                     ).to_dict(),
                                     "statusDate": DataTemplateElement(
                                         example="2025-12-12T10:32:23.042643",
@@ -694,7 +690,7 @@ class DataTemplate:
                                                                      condition_column="ParentNumber",
                                                                      clause_after_when='AND "Name" = \'OCDate\''),
                                         ],
-                                        after="'-'.join(reversed(str(x).split('.'))) + 'T12:00:00.000000'",
+                                        after="'-'.join(reversed(str(x).split('.'))) + 'T00:00:00.000000'",
                                     ).to_dict(),
                                     "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
                                 },
@@ -704,5 +700,61 @@ class DataTemplate:
                 }
             }
         }
+        return example_data
 
+    @staticmethod
+    def create_update_example_json() -> dict[str, Any]:
+        """Generate a sample UpdateOrdersRequest template JSON."""
+        example_data = {
+            "@env": "SVCDEV",  # SVCDEV/EPGU/ERUL
+            "UpdateOrdersRequest": {
+                "orders": {
+                    "order": [{
+                        "elkOrderNumber": "4654289935",
+                        "senderKpp": "773001001",
+                        "senderInn": "7730176088",
+                        "statusHistoryList": {
+                            "statusHistory": ListElement(
+                                howto=[
+                                    DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                    DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
+                                                             condition_column="Number"),
+                                    DataTemplateHowToElement(column_name="Number", table_name="Objects",
+                                                             condition_column="ParentNumber", multiple=True,
+                                                             clause_after_when='AND "Kind" = \'150002\''),
+                                ],
+                                template={
+                                    "_debug_parent": DataTemplateElement(
+                                        example="605795c6-4a22-4633-9a65-c3d8ec882c30",
+                                        howto=[
+                                            DataTemplateHowToElement(column_name="ParentNumber", table_name="SearchAttributes",
+                                                                     condition_column="ParentNumber"),
+                                        ],
+                                    ).to_dict(),
+                                    "status": DataTemplateElement(
+                                        example="1",
+                                        howto=[
+                                            DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
+                                                                     condition_column="ParentNumber",
+                                                                     clause_after_when='AND "Name" = \'OCCode\''),
+                                        ],
+                                        after=f"{config.loaded_config.status_mapping}.get(str(x), 'ERROR' + str(x))",
+                                    ).to_dict(),
+                                    "statusDate": DataTemplateElement(
+                                        example="2025-12-12T10:32:23.042643",
+                                        howto=[
+                                            DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
+                                                                     condition_column="ParentNumber",
+                                                                     clause_after_when='AND "Name" = \'OCDate\''),
+                                        ],
+                                        after="'-'.join(reversed(str(x).split('.'))) + 'T00:00:00.000000'",
+                                    ).to_dict(),
+                                    "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
+                                },
+                            ).to_dict(),
+                        },
+                    }]
+                }
+            }
+        }
         return example_data

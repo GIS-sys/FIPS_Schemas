@@ -1,21 +1,41 @@
-db_appl_host: localhost
+db_appl_host: 10.2.53.15
 db_appl_port: 5432
-db_appl_dbname: fips_test_db
-db_appl_user: fips_test_user
-db_appl_password: fips_test_pass
+db_appl_dbname: uad_int
+db_appl_user: gegorov
+db_appl_password: TODO
 
-proxy_ip: none
-proxy_ssh_user: none
-proxy_ssh_password: none
+proxy_ip: 10.1.74.141
+proxy_ssh_user: poweruser
+proxy_ssh_password: TODO
 
-api_ip: none
-api_port: none
-api_bind_port: none
-api_ssh_user: none
-api_ssh_password: none
+api_ip: 10.2.53.72
+api_port: 8079
+api_bind_port: 11903
+api_ssh_user: egorov
+api_ssh_password: TODO
 
-db_adapter_ip: none
-db_adapter_port: none
-db_adapter_dbname: none
-db_adapter_user: none
-db_adapter_password: none
+db_adapter_ip: 10.0.36.11
+db_adapter_port: 5432
+db_adapter_dbname: smev_adapter_single
+db_adapter_user: egorov
+db_adapter_password: TODO
+
+sleep_interval: 10
+monitor_starting_date: 2025-12-31
+status_mapping:
+  "001": 7
+  "010": 210
+  "407": 7
+  "724": 7
+  "730": 6
+  "940": 1
+  "950": 7
+  "951": 7
+
+debug:
+  replace:
+    orderNumber:
+      "1999880001": 1999290016
+      "1999880003": 1999290017
+    date: yday
+

@@ -1,4 +1,5 @@
 from typing import Any
+import re
 
 
 def get_control_ogrn(t: str, value: str) -> str:
@@ -13,6 +14,7 @@ def get_control_ogrn(t: str, value: str) -> str:
     raise Exception(f"get_control_ogrn expected t in [UL, IP], got {t}")
 
 def get_control_snils(value: str) -> str:
+    value = "".join([x for x in value if x in "1234567890"])
     main = value[:9]
     control = 0
     for i, d in enumerate(main):
@@ -59,7 +61,9 @@ def validate_ogrn(t: str, value: str) -> str:
 def validate_snils(value: str) -> str:
     if value is None:
         return False
-    return len(value) == 11 and value[-2:] == get_control_snils(value)
+    if not re.match("^\\d\\d\\d-\\d\\d\\d-\\d\\d\\d \\d\\d$", value):
+        return None
+    return value[-2:] == get_control_snils(value)
 
 def validate_inn(t: str, value: str) -> str:
     if value is None:

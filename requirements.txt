@@ -1,11 +1,10 @@
-# psycopg2
 xmlschema
 tqdm
 PyYAML
 
-fastapi
+#fastapi
+#paramiko==2.12.0
 
-paramiko==2.12.0
 psycopg2==2.9.11
 psycopg2-binary==2.9.11
 sshtunnel==0.4.0

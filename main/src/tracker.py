@@ -62,37 +62,59 @@ class RecordTracker:
         self.save()
 
     def _refresh_status_history(self, db_connector, uid: str):
-        """Query the database for current ParentNumbers of statusHistory (Kind=150002) for this uid."""
+        """Query the database for current ParentNumbers of statusHistory (Kind=150002) for this uid,
+        along with OCCode, OCDate and CreatedDate."""
         query = """
             WITH obj AS (
                 SELECT object_uid FROM fips_rutrademark WHERE rutmk_uid = %s
+            ),
+            status_objects AS (
+                SELECT o2."Number" as parent_number
+                FROM "Objects" o1
+                JOIN "Objects" o2 ON o1."ParentNumber" = o2."ParentNumber"
+                WHERE o1."Number" = (SELECT object_uid FROM obj)
+                  AND o2."Kind" = '150002'
             )
-            SELECT o2."Number"
-            FROM "Objects" o1
-            JOIN "Objects" o2 ON o1."ParentNumber" = o2."ParentNumber"
-            WHERE o1."Number" = (SELECT object_uid FROM obj)
-              AND o2."Kind" = '150002'
+            SELECT
+                so.parent_number,
+                sa_code."TextValue" as occ_code,
+                sa_date."TextValue" as occ_date,
+                COALESCE(sa_code."CreatedDate", sa_date."CreatedDate") as created_date
+            FROM status_objects so
+            LEFT JOIN "SearchAttributes" sa_code
+                ON sa_code."ParentNumber" = so.parent_number AND sa_code."Name" = 'OCCode'
+            LEFT JOIN "SearchAttributes" sa_date
+                ON sa_date."ParentNumber" = so.parent_number AND sa_date."Name" = 'OCDate'
         """
         rows = db_connector.fetchall(query, (uid,))
-        current_parents = {str(row[0]) for row in rows}
+        current_parents = {}
+        for row in rows:
+            parent = str(row[0])
+            current_parents[parent] = {
+                'occ_code_raw': row[1],
+                'occ_date_raw': row[2],
+                'created_date': str(row[3]) if row[3] else None
+            }
 
         # Get existing status_history from tracker
         existing = self.data[uid].get("status_history", [])
         existing_map = {entry["parent_number"]: entry for entry in existing}
 
         new_history = []
-        for parent in current_parents:
+        for parent, extra in current_parents.items():
             if parent in existing_map:
                 # keep existing entry (status unchanged)
                 new_history.append(existing_map[parent])
             else:
-                # new statusHistory record
-                new_history.append({
+                # new statusHistory record with extra fields
+                new_entry = {
                     "parent_number": parent,
                     "status": "NEW",
                     "path_to_xml": None,
-                    "error_text": None
-                })
+                    "error_text": None,
+                    **extra
+                }
+                new_history.append(new_entry)
         self.data[uid]["status_history"] = new_history
 
     def get_records_by_status(self, *statuses: str) -> list[tuple]:
@@ -136,4 +158,21 @@ class RecordTracker:
             new_entry.update(kwargs)
             history.append(new_entry)
         self.save()
+
+    def get_elk_order_number(self, uid: str) -> Optional[str]:
+        return self.data.get(uid, {}).get("elkOrderNumber", None)
+
+    def get_create_request_id(self, uid: str) -> Optional[str]:
+        return self.data.get(uid, {}).get("createRequestId", None)
+
+    def get_update_seq(self, uid: str) -> int:
+        return self.data.get(uid, {}).get("update_seq", 0)
+
+    def increment_update_seq(self, uid: str) -> int:
+        if uid not in self.data:
+            self.data[uid] = {}
+        seq = self.data[uid].get("update_seq", 0) + 10
+        self.data[uid]["update_seq"] = seq
+        self.save()
+        return seq
 
