@@ -218,11 +218,14 @@ def main():
                             raise Exception("Invalid structure: order list missing")
                         order = order_list[0]
                         # Replace with a single-element list
+                        status_dict = None
                         for specific_history in order["statusHistoryList"]["statusHistory"]:
                             if specific_history["_debug_parent"] == parent:
                                 status_dict = copy.deepcopy(specific_history)
                                 status_dict.pop("_debug_parent")
                                 break
+                        if status_dict is None:
+                            raise Exception(f"No status history entry with _debug_parent={parent} found!")
                         order["statusHistoryList"]["statusHistory"] = [status_dict]
                         status_date = status_dict.get("statusDate")
                     except KeyError as e:
