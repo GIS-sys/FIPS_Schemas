@@ -42,6 +42,29 @@ class SingleThreadedTunnelManager:
         self.DB_ADAPTER_LOCAL_PORT = 15432
         self.DB_APPL_LOCAL_PORT = 15433  # fixed port for second DB
 
+    def _recreate_db_adapter(self):
+        """Fully recreate the db_adapter tunnel and connection pool."""
+        self._stop_tunnels(self.db_adapter_tunnel, self.jump_tunnel_db_adapter)
+        if self.db_adapter_pool:
+            self.db_adapter_pool.closeall()
+            self.db_adapter_pool = None
+        self.db_adapter_tunnel = None
+        self.jump_tunnel_db_adapter = None
+        # Force recreation on next access
+        self.get_db_adapter_tunnel()
+        self._ensure_db_adapter_pool()
+
+    def _recreate_db_appl(self):
+        """Fully recreate the db_appl tunnel and connection pool."""
+        self._stop_tunnels(self.db_appl_tunnel)
+        if self.db_appl_pool:
+            self.db_appl_pool.closeall()
+            self.db_appl_pool = None
+        self.db_appl_tunnel = None
+        # Force recreation on next access
+        self.get_db_appl_tunnel()
+        self._ensure_db_appl_pool()
+
     def _stop_tunnels(self, *tunnels):
         """Safely stop one or more tunnels"""
         for tunnel in tunnels:
@@ -133,8 +156,18 @@ class SingleThreadedTunnelManager:
             self.db_adapter_pool._port = current_port
 
     def get_db_adapter_connection(self):
-        self._ensure_db_adapter_pool()
-        return self.db_adapter_pool.getconn()
+        try:
+            self._ensure_db_adapter_pool()
+            return self.db_adapter_pool.getconn()
+        except (psycopg2.OperationalError, ConnectionRefusedError, OSError) as e:
+            # Tunnel or pool is broken – recreate and retry once
+            self._recreate_db_adapter()
+            try:
+                self._ensure_db_adapter_pool()
+                return self.db_adapter_pool.getconn()
+            except Exception as retry_error:
+                # If still failing, raise the original or new error
+                raise RuntimeError(f"Failed to get db_adapter connection after recovery: {retry_error}") from e
 
     def return_db_adapter_connection(self, conn):
         if self.db_adapter_pool:
@@ -188,8 +221,18 @@ class SingleThreadedTunnelManager:
             self.db_appl_pool._port = current_port
 
     def get_db_appl_connection(self):
-        self._ensure_db_appl_pool()
-        return self.db_appl_pool.getconn()
+        try:
+            self._ensure_db_appl_pool()
+            return self.db_appl_pool.getconn()
+        except (psycopg2.OperationalError, ConnectionRefusedError, OSError) as e:
+            # Tunnel or pool is broken – recreate and retry once
+            self._recreate_db_appl()
+            try:
+                self._ensure_db_appl_pool()
+                return self.db_appl_pool.getconn()
+            except Exception as retry_error:
+                # If still failing, raise the original or new error
+                raise RuntimeError(f"Failed to get db_appl connection after recovery: {retry_error}") from e
 
     def return_db_appl_connection(self, conn):
         if self.db_appl_pool:
