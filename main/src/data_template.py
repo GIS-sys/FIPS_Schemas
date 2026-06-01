@@ -681,7 +681,7 @@ class DataTemplate:
                                                                      condition_column="ParentNumber",
                                                                      clause_after_when='AND "Name" = \'OCCode\''),
                                         ],
-                                        after=f"{config.loaded_config.status_mapping}.get(str(x), 'ERROR' + str(x))",
+                                        after=f"config.loaded_config.status_mapping.get(str(x), 'ERROR' + str(x))",
                                     ).to_dict(),
                                     "statusDate": DataTemplateElement(
                                         example="2025-12-12T10:32:23.042643",
@@ -738,7 +738,7 @@ class DataTemplate:
                                                                      condition_column="ParentNumber",
                                                                      clause_after_when='AND "Name" = \'OCCode\''),
                                         ],
-                                        after=f"{config.loaded_config.status_mapping}.get(str(x), 'ERROR' + str(x))",
+                                        after=f"config.loaded_config.status_mapping.get(str(x), 'ERROR' + str(x))",
                                     ).to_dict(),
                                     "statusDate": DataTemplateElement(
                                         example="2025-12-12T10:32:23.042643",
