@@ -61,11 +61,12 @@ class DataTemplateHowToElement:
         return result
 
     def to_value(self, db_connector: DBConnector, condition_value: Any):
+        cond_val = condition_value[0] if isinstance(condition_value, tuple) else condition_value
         condition_column = (self.condition_column if self.condition_column is not None
                             else db_connector.get_index_column_name())
         req = f"""
             SELECT "{self.column_name}" FROM "{self.table_name}"
-            WHERE "{condition_column}" = '{condition_value}' {self.clause_after_when if self.clause_after_when is not None else ''}
+            WHERE "{condition_column}" = '{cond_val}' {self.clause_after_when if self.clause_after_when is not None else ''}
         """
         data = db_connector.fetchall(req)
         logger.log("Debug", "to_value\n", data, "\n", req)
@@ -111,11 +112,12 @@ def get_validation_errors():
 
 
 class DataTemplateElement:
-    def __init__(self, example: str, howto: list[DataTemplateHowToElement], after: str = None, validate: list[str] = None):
+    def __init__(self, example: str, howto: list[DataTemplateHowToElement], after: str = None, validate: list[str] = None, tuple_index: int = 0):
         self.example = example
         self.howto = howto
         self.after = after
         self.validate = validate if validate is not None else []
+        self.tuple_index = tuple_index
 
     @staticmethod
     def from_dict_able(obj: dict) -> bool:
@@ -128,6 +130,7 @@ class DataTemplateElement:
                 "howto": [howto_el.to_dict() for howto_el in self.howto],
                 "after": self.after,
                 "validate": self.validate,
+                "tuple_index": self.tuple_index,
             }
         }
 
@@ -139,6 +142,7 @@ class DataTemplateElement:
             howto=[DataTemplateHowToElement.from_dict(howto_el) for howto_el in obj["howto"]],
             after=obj.get("after", None),
             validate=obj.get("validate", []),
+            tuple_index=obj.get("tuple_index", 0),
         )
         return dte
 
@@ -147,6 +151,8 @@ class DataTemplateElement:
             return self.example
         if ind is None:
             raise Exception("DataTemplateElement::to_value got ind=None")
+        if isinstance(ind, tuple):
+            ind = ind[self.tuple_index]
         last_result = ind
         for howto_el in self.howto:
             data = howto_el.to_value(db_connector, last_result)
@@ -366,21 +372,30 @@ class DataTemplate:
             return self._fill_recursive(result, db_connector, ind)
 
         elif isinstance(node, ListElement):
-            values = node.to_value(db_connector, ind)
+            outer_vals = node.to_value(db_connector, ind)   # list from node.howto
             results = []
-            for val in values:
-                filled = self._fill_recursive(node.template, db_connector, val)
-                if filled is not None:
-                    results.append(filled)
-            # apply optional `after` to each element
+            # If the template is another ListElement → nested flattening
+            if isinstance(node.template, ListElement):
+                print("DEBUG!!!!!!!")
+                inner_list_elem = node.template
+                for outer_val in outer_vals:
+                    inner_vals = inner_list_elem.to_value(db_connector, outer_val)
+                    for inner_val in inner_vals:
+                        # Pass tuple (outer, inner) to the innermost template (inner_list_elem.template)
+                        filled = self._fill_recursive(inner_list_elem.template, db_connector, (outer_val, inner_val))
+                        if filled is not None:
+                            results.append(filled)
+            else:
+                # Original behaviour: template is not a ListElement
+                for val in outer_vals:
+                    filled = self._fill_recursive(node.template, db_connector, val)
+                    if filled is not None:
+                        results.append(filled)
+            # Apply optional after (if any) to each result
             if node.after is not None:
-                try:
-                    foo = eval(f"lambda x: ({node.after})")
-                    results = [foo(r) for r in results]
-                except Exception:
-                    raise Exception(f"Could not apply after={node.after} to list results")
+                foo = eval(f"lambda x: ({node.after})")
+                results = [foo(r) for r in results]
             return results
-
         else:
             # Plain value (str, int, etc.)
             return node
@@ -666,9 +681,17 @@ class DataTemplate:
                                     DataTemplateHowToElement(column_name="Number", table_name="Objects",
                                                              condition_column="ParentNumber", multiple=True, clause_after_when='AND "Kind" = \'150002\''),
                                 ],
-                                template={
+                                template=ListElement(
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
+                                                                 condition_column="ParentNumber",
+                                                                 clause_after_when='AND "Name" = \'OCCode\''),
+                                    ],
+                                    after=f"config.loaded_config.status_mapping.get(str(x), ['ERROR' + str(x)])",
+                                    template={
                                     "_debug_parent": DataTemplateElement(
                                         example="605795c6-4a22-4633-9a65-c3d8ec882c30",
+                                        tuple_index=0,
                                         howto=[
                                             DataTemplateHowToElement(column_name="ParentNumber", table_name="SearchAttributes",
                                                                      condition_column="ParentNumber"),
@@ -676,15 +699,13 @@ class DataTemplate:
                                     ).to_dict(),
                                     "status": DataTemplateElement(
                                         example="1",
-                                        howto=[
-                                            DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
-                                                                     condition_column="ParentNumber",
-                                                                     clause_after_when='AND "Name" = \'OCCode\''),
-                                        ],
+                                        tuple_index=1,
+                                        howto=[],
                                         after=f"config.loaded_config.status_mapping.get(str(x), 'ERROR' + str(x))",
                                     ).to_dict(),
                                     "statusDate": DataTemplateElement(
                                         example="2025-12-12T10:32:23.042643",
+                                        tuple_index=0,
                                         howto=[
                                             DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
                                                                      condition_column="ParentNumber",
@@ -693,7 +714,8 @@ class DataTemplate:
                                         after="'-'.join(reversed(str(x).split('.'))) + 'T00:00:00.000000'",
                                     ).to_dict(),
                                     "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
-                                },
+                                    },
+                                )
                             ).to_dict(),
                         },
                     }]
