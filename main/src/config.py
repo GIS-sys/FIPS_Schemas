@@ -41,6 +41,8 @@ class LoadedConfig:
         self.db_adapter_user = config["db_adapter_user"]
         self.db_adapter_password = config["db_adapter_password"]
 
+        self.api_files_url = config.get("api_files_url", "http://10.2.53.15:4300")
+
         self.sleep_interval = config.get("sleep_interval", 10)
         self.monitor_starting_date = config.get("monitor_starting_date", "2025-12-31")
         self.status_mapping = config.get("status_mapping", {})

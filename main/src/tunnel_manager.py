@@ -4,8 +4,10 @@ import requests
 from sshtunnel import SSHTunnelForwarder
 import uuid
 from contextlib import contextmanager
+import time
 
 from src.config import loaded_config
+from src.logger import logger
 
 
 class SingleThreadedTunnelManager:
@@ -44,6 +46,7 @@ class SingleThreadedTunnelManager:
 
     def _recreate_db_adapter(self):
         """Fully recreate the db_adapter tunnel and connection pool."""
+        logger.log("ERROR: DB adapter tunnel is not active, recreating...", force_print=True)
         self._stop_tunnels(self.db_adapter_tunnel, self.jump_tunnel_db_adapter)
         if self.db_adapter_pool:
             self.db_adapter_pool.closeall()
@@ -56,6 +59,7 @@ class SingleThreadedTunnelManager:
 
     def _recreate_db_appl(self):
         """Fully recreate the db_appl tunnel and connection pool."""
+        logger.log("ERROR: DB appl tunnel is not active, recreating...", force_print=True)
         self._stop_tunnels(self.db_appl_tunnel)
         if self.db_appl_pool:
             self.db_appl_pool.closeall()
@@ -70,6 +74,7 @@ class SingleThreadedTunnelManager:
         for tunnel in tunnels:
             if tunnel and tunnel.is_active:
                 tunnel.stop()
+        time.sleep(2)
 
     # ========== API Tunnel (existing) ==========
     def get_api_tunnel(self):
@@ -118,6 +123,7 @@ class SingleThreadedTunnelManager:
             return self.db_adapter_tunnel
 
         self._stop_tunnels(self.db_adapter_tunnel, self.jump_tunnel_db_adapter)
+        logger.log("WARNING: DB adapter tunnel is not active, recreating...", force_print=True)
 
         jump_tunnel = SSHTunnelForwarder(
             (loaded_config.proxy_ip, 22),
@@ -192,6 +198,7 @@ class SingleThreadedTunnelManager:
             return self.db_appl_tunnel
 
         self._stop_tunnels(self.db_appl_tunnel)
+        logger.log("WARNING: DB appl tunnel is not active, recreating...", force_print=True)
 
         self.db_appl_tunnel = SSHTunnelForwarder(
             (loaded_config.proxy_ip, 22),

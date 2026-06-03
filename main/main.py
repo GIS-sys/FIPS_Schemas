@@ -52,6 +52,44 @@ def main():
     # Initialize the persistent tracker
     tracker = RecordTracker(config.TRACKER_JSON)
 
+
+
+    # === ТЕСТОВЫЙ РАЗРЫВ ТУННЕЛЯ (удалить после отладки) ===
+    import threading
+    import time
+    from src.tunnel_manager import SingleThreadedTunnelManager
+
+    def break_adapter_tunnel():
+        mgr = SingleThreadedTunnelManager.instance()
+        print("\n*** [TEST] Breaking adapter_db tunnel ***")
+        if mgr.db_adapter_tunnel:
+            if mgr.db_adapter_tunnel.is_active:
+                mgr.db_adapter_tunnel.stop()
+                print("[TEST] Tunnel stopped")
+            else:
+                print("[TEST] Tunnel exists but not active")
+        else:
+            print("[TEST] Tunnel not created yet")
+        if mgr.db_adapter_pool:
+            mgr.db_adapter_pool.closeall()
+            mgr.db_adapter_pool = None
+            print("[TEST] Connection pool closed")
+
+    # Принудительно создаём туннель, чтобы его можно было сломать
+    mgr = SingleThreadedTunnelManager.instance()
+    print("[TEST] Pre-creating adapter_db tunnel...")
+    tunnel = mgr.get_db_adapter_tunnel()
+    time.sleep(1.5)  # даём время на установку SSH-соединения
+    if tunnel and tunnel.is_active:
+        print("[TEST] Adapter_db tunnel created and active")
+    else:
+        print("[TEST] Adapter_db tunnel creation failed or not active (check logs)")
+
+    # Запускаем таймер, который через 15 секунд сломает туннель (достаточно, чтобы дойти до STEP 6)
+    threading.Timer(15.0, break_adapter_tunnel).start()
+
+    
+
     # Main loop – runs forever, checking for new records and processing them
     while True:
         print("\n" * 16 + "New scan", flush=True)

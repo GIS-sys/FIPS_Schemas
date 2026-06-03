@@ -70,31 +70,142 @@ class DataTemplateHowToElement:
         """
         data = db_connector.fetchall(req)
         logger.log("Debug", "to_value\n", data, "\n", req)
+        #print("HowTo::to_value", data)
 
         if self.multiple:
+            #print("HowTo::to_value::multiple", data)
             # Return a list of first column values, applying `after` to each if present
             if not data:
-                return []
-            values = [row[0] for row in data if row[0] is not None]
+                values = []
+            else:
+                values = [(row[0] if row is not None else None) for row in data]
+            #print("HowTo::to_value::multiple", data, values)
             if self.after is not None:
                 try:
                     foo = eval(f"lambda x: ({self.after})")
                     values = [foo(v) for v in values]
+                    #print("HowTo::to_value::multiple::after", values)
                 except Exception:
                     raise Exception(f"Elements in {values} could not be formatted using after={self.after}")
             return values
         else:
             # Original single-value behaviour
             if not data or data[0] is None or data[0][0] is None:
-                return None
-            val = data[0][0]
+                val = None
+            else:
+                val = data[0][0]
+            #print("HowTo::to_value::single", data, val)
             if self.after is not None:
                 try:
                     foo = eval(f"lambda x: ({self.after})")
                     val = foo(val)
+                    #print("HowTo::to_value::single::after", val)
                 except Exception:
                     raise Exception(f"{val} could not be formatted using after={self.after}")
             return val
+
+
+class FileElement:
+    """Элемент, который скачивает файлы из внешнего API по списку идентификаторов."""
+    def __init__(self, howto: list[DataTemplateHowToElement], after: str = None):
+        self.howto = howto
+        self.after = after
+
+    @staticmethod
+    def from_dict(obj: dict):
+        data = obj['_FileElement_']
+        howto = [DataTemplateHowToElement.from_dict(h) for h in data['howto']]
+        after = data.get('after')
+        return FileElement(howto, after)
+
+    def to_dict(self) -> dict:
+        result = {
+            'howto': [h.to_dict() for h in self.howto],
+        }
+        if self.after is not None:
+            result['after'] = self.after
+        return {'_FileElement_': result}
+
+    def to_value(self, db_connector: DBConnector, ind: Any):
+        # 1. Вычисляем список идентификаторов объектов (статусных)
+        last = ind
+        for howto_el in self.howto:
+            val = howto_el.to_value(db_connector, last)
+            last = val
+        status_object_numbers = last
+        if not isinstance(status_object_numbers, list):
+            # Если вернулся не список, превращаем в список (один элемент)
+            status_object_numbers = [status_object_numbers] if status_object_numbers is not None else []
+
+        # 2. Для каждого объекта скачиваем файлы
+        all_files = []
+        from src.config import loaded_config
+        from src.tunnel_manager import SingleThreadedTunnelManager
+        import requests
+        import base64
+
+        api_base = loaded_config.api_files_url
+
+        for obj_number in status_object_numbers:
+            files_list = []
+            try:
+                # Получить список файлов для объекта
+                with SingleThreadedTunnelManager.instance().api_connection():
+                    resp = requests.get(f"{api_base}/api/files/{obj_number}", timeout=30)
+                    if resp.status_code != 200:
+                        raise Exception(f"HTTP {resp.status_code}: {resp.text[:200]}")
+                    file_metadata = resp.json()  # ожидается список
+
+                for file_info in file_metadata:
+                    file_number = file_info.get('number')
+                    version = file_info.get('version', 1)
+                    # Скачать содержимое файла
+                    content_b64 = None
+                    result_status = "OK"
+                    try:
+                        with SingleThreadedTunnelManager.instance().api_connection():
+                            content_resp = requests.get(
+                                f"{api_base}/api/files/raw_version/{obj_number}/{file_number}/{version}",
+                                timeout=30
+                            )
+                            if content_resp.status_code == 200:
+                                content_b64 = base64.b64encode(content_resp.content).decode('ascii')
+                            else:
+                                result_status = f"ERROR: HTTP {content_resp.status_code}"
+                    except Exception as e:
+                        result_status = f"ERROR: {str(e)}"
+
+                    file_entry = {
+                        "originalName": file_info.get('originalName'),
+                        "name": file_info.get('name'),
+                        "kind": file_info.get('kind'),
+                        "createdDate": file_info.get('createdDate'),
+                        "content_base64": content_b64,
+                        "result": result_status,
+                    }
+                    files_list.append(file_entry)
+            except Exception as e:
+                # Если не удалось получить даже список – добавим фиктивный элемент с ошибкой
+                files_list.append({
+                    "originalName": None,
+                    "name": None,
+                    "kind": None,
+                    "createdDate": None,
+                    "content_base64": None,
+                    "result": f"ERROR: {str(e)}",
+                    "object_number": obj_number,  # для отладки
+                })
+            all_files.extend(files_list)
+
+        # 3. Применить after, если задан
+        if self.after is not None:
+            try:
+                foo = eval(f"lambda x: ({self.after})")
+                all_files = [foo(f) for f in all_files]
+            except Exception as e:
+                raise Exception(f"FileElement after transformation failed: {e}")
+
+        return all_files
 
 
 _validation_errors = []
@@ -290,6 +401,7 @@ class ListElement:
         for howto_el in self.howto:
             val = howto_el.to_value(db_connector, last)
             last = val
+        #print("ListElement::to_value::end", ind, last, len(self.howto))
         # last must be a list
         if not isinstance(last, list):
             raise Exception(f"ListElement expected a list from howto, got {type(last)}")
@@ -323,6 +435,10 @@ class DataTemplate:
                 if to_dict:
                     return node
                 return ListElement.from_dict(node)
+            if '_FileElement_' in node:
+                if to_dict:
+                    return node
+                return FileElement.from_dict(node)
 
             # Regular dict – recurse into values
             new_dict = {}
@@ -372,22 +488,28 @@ class DataTemplate:
             return self._fill_recursive(result, db_connector, ind)
 
         elif isinstance(node, ListElement):
+            #print("ListElement")
             outer_vals = node.to_value(db_connector, ind)   # list from node.howto
             results = []
             # If the template is another ListElement → nested flattening
             if isinstance(node.template, ListElement):
-                print("DEBUG!!!!!!!")
-                inner_list_elem = node.template
+                #print("ListElement::outer")
                 for outer_val in outer_vals:
+                    inner_list_elem = ListElement.from_dict(node.template.to_dict())
+                    print("ListElement::outer::val", outer_val)
                     inner_vals = inner_list_elem.to_value(db_connector, outer_val)
+                    print("ListElement::outer::val", outer_val, inner_vals)
                     for inner_val in inner_vals:
+                        print("\n"*10, outer_val, inner_val)
                         # Pass tuple (outer, inner) to the innermost template (inner_list_elem.template)
                         filled = self._fill_recursive(inner_list_elem.template, db_connector, (outer_val, inner_val))
                         if filled is not None:
                             results.append(filled)
             else:
+                #print("ListElement::inner")
                 # Original behaviour: template is not a ListElement
                 for val in outer_vals:
+                    #print("ListElement::inner::val", val)
                     filled = self._fill_recursive(node.template, db_connector, val)
                     if filled is not None:
                         results.append(filled)
@@ -396,6 +518,12 @@ class DataTemplate:
                 foo = eval(f"lambda x: ({node.after})")
                 results = [foo(r) for r in results]
             return results
+
+        elif isinstance(node, FileElement):
+            # Вычисляем значение (список словарей)
+            result = node.to_value(db_connector, ind)
+            return self._fill_recursive(result, db_connector, ind)
+
         else:
             # Plain value (str, int, etc.)
             return node
@@ -685,9 +813,9 @@ class DataTemplate:
                                     howto=[
                                         DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
                                                                  condition_column="ParentNumber",
-                                                                 clause_after_when='AND "Name" = \'OCCode\''),
+                                                                 clause_after_when='AND "Name" = \'OCCode\'',
+                                                                 after=f"config.loaded_config.status_mapping.get(str(x), ['ERROR' + str(x)])"),
                                     ],
-                                    after=f"config.loaded_config.status_mapping.get(str(x), ['ERROR' + str(x)])",
                                     template={
                                     "_debug_parent": DataTemplateElement(
                                         example="605795c6-4a22-4633-9a65-c3d8ec882c30",
@@ -715,7 +843,21 @@ class DataTemplate:
                                     ).to_dict(),
                                     "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
                                     },
-                                )
+                                ).to_dict()
+                            ).to_dict(),
+                        },
+                        "attachments": {
+                            "attachment": FileElement(
+                                howto=[
+                                    # Повторить цепочку как в ListElement для statusHistory, но без вложенного ListElement
+                                    DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                    DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
+                                                             condition_column="Number"),
+                                    DataTemplateHowToElement(column_name="Number", table_name="Objects",
+                                                             condition_column="ParentNumber", multiple=True,
+                                                             clause_after_when='AND "Kind" = \'150002\''),
+                                ],
+                                after=None,   # при необходимости можно постобработать каждый словарь
                             ).to_dict(),
                         },
                     }]
@@ -738,16 +880,26 @@ class DataTemplate:
                         "statusHistoryList": {
                             "statusHistory": ListElement(
                                 howto=[
+                                    # 1. get object_uid from fips_rutrademark
                                     DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                    # 2. get parent number from Objects where Number = object_uid
                                     DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
                                                              condition_column="Number"),
+                                    # 3. get all child Numbers where ParentNumber = parent number (multiple)
                                     DataTemplateHowToElement(column_name="Number", table_name="Objects",
-                                                             condition_column="ParentNumber", multiple=True,
-                                                             clause_after_when='AND "Kind" = \'150002\''),
+                                                             condition_column="ParentNumber", multiple=True, clause_after_when='AND "Kind" = \'150002\''),
                                 ],
-                                template={
+                                template=ListElement(
+                                    howto=[
+                                        DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
+                                                                 condition_column="ParentNumber",
+                                                                 clause_after_when='AND "Name" = \'OCCode\'',
+                                                                 after=f"config.loaded_config.status_mapping.get(str(x), ['ERROR' + str(x)])"),
+                                    ],
+                                    template={
                                     "_debug_parent": DataTemplateElement(
                                         example="605795c6-4a22-4633-9a65-c3d8ec882c30",
+                                        tuple_index=0,
                                         howto=[
                                             DataTemplateHowToElement(column_name="ParentNumber", table_name="SearchAttributes",
                                                                      condition_column="ParentNumber"),
@@ -755,15 +907,13 @@ class DataTemplate:
                                     ).to_dict(),
                                     "status": DataTemplateElement(
                                         example="1",
-                                        howto=[
-                                            DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
-                                                                     condition_column="ParentNumber",
-                                                                     clause_after_when='AND "Name" = \'OCCode\''),
-                                        ],
+                                        tuple_index=1,
+                                        howto=[],
                                         after=f"config.loaded_config.status_mapping.get(str(x), 'ERROR' + str(x))",
                                     ).to_dict(),
                                     "statusDate": DataTemplateElement(
                                         example="2025-12-12T10:32:23.042643",
+                                        tuple_index=0,
                                         howto=[
                                             DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
                                                                      condition_column="ParentNumber",
@@ -772,7 +922,22 @@ class DataTemplate:
                                         after="'-'.join(reversed(str(x).split('.'))) + 'T00:00:00.000000'",
                                     ).to_dict(),
                                     "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
-                                },
+                                    },
+                                ).to_dict()
+                            ).to_dict()
+                        },
+                        "attachments": {
+                            "attachment": FileElement(
+                                howto=[
+                                    # Повторить цепочку как в ListElement для statusHistory, но без вложенного ListElement
+                                    DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                    DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
+                                                             condition_column="Number"),
+                                    DataTemplateHowToElement(column_name="Number", table_name="Objects",
+                                                             condition_column="ParentNumber", multiple=True,
+                                                             clause_after_when='AND ("Kind" = \'150002\' OR "Kind" = \'150003\')'),
+                                ],
+                                after=None,   # при необходимости можно постобработать каждый словарь
                             ).to_dict(),
                         },
                     }]
