@@ -36,6 +36,8 @@ class XMLGenerator:
         #     parent.set("xmlns", "http://epgu.gosuslugi.ru/elk/status/1.0.2")
 
         for key, value in data.items():
+            if key.startswith('_'):  # Debug metadata, skip
+                continue
             if key.startswith('@'):  # Attribute
                 attr_name = key[1:]
                 parent.set(attr_name, str(value))

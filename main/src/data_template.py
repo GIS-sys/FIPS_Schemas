@@ -107,16 +107,18 @@ class DataTemplateHowToElement:
 
 class FileElement:
     """Элемент, который скачивает файлы из внешнего API по списку идентификаторов."""
-    def __init__(self, howto: list[DataTemplateHowToElement], after: str = None):
+    def __init__(self, howto: list[DataTemplateHowToElement], after: str = None, tuple_index: int = None):
         self.howto = howto
         self.after = after
+        self.tuple_index = tuple_index
 
     @staticmethod
     def from_dict(obj: dict):
         data = obj['_FileElement_']
         howto = [DataTemplateHowToElement.from_dict(h) for h in data['howto']]
-        after = data.get('after')
-        return FileElement(howto, after)
+        after = data.get('after', None)
+        tuple_index = data.get('tuple_index', None)
+        return FileElement(howto, after, tuple_index)
 
     def to_dict(self) -> dict:
         result = {
@@ -124,9 +126,15 @@ class FileElement:
         }
         if self.after is not None:
             result['after'] = self.after
+        if self.tuple_index is not None:
+            result['tuple_index'] = self.tuple_index
         return {'_FileElement_': result}
 
+
     def to_value(self, db_connector: DBConnector, ind: Any):
+        if self.tuple_index is not None:
+            ind = ind[self.tuple_index]
+
         # 1. Вычисляем список идентификаторов объектов (статусных)
         last = ind
         for howto_el in self.howto:
@@ -176,24 +184,26 @@ class FileElement:
                         result_status = f"ERROR: {str(e)}"
 
                     file_entry = {
-                        "originalName": file_info.get('originalName'),
-                        "name": file_info.get('name'),
-                        "kind": file_info.get('kind'),
-                        "createdDate": file_info.get('createdDate'),
-                        "content_base64": content_b64,
-                        "result": result_status,
+                        "FSuuid": file_number,
+                        "docTypeId": file_info.get('kind'),
+                        "_originalName": file_info.get('originalName'),
+                        "_name": file_info.get('name'),
+                        "_createdDate": file_info.get('createdDate'),
+                        "_content_base64": content_b64,
+                        "_result": result_status,
                     }
                     files_list.append(file_entry)
             except Exception as e:
                 # Если не удалось получить даже список – добавим фиктивный элемент с ошибкой
                 files_list.append({
-                    "originalName": None,
-                    "name": None,
-                    "kind": None,
-                    "createdDate": None,
-                    "content_base64": None,
-                    "result": f"ERROR: {str(e)}",
-                    "object_number": obj_number,  # для отладки
+                    "FSuuid": file_number,
+                    "docTypeId": file_info.get('kind'),
+                    "_originalName": None,
+                    "_name": None,
+                    "_createdDate": None,
+                    "_content_base64": None,
+                    "_result": f"ERROR: {str(e)}",
+                    "_object_number": obj_number,  # для отладки
                 })
             all_files.extend(files_list)
 
@@ -496,21 +506,24 @@ class DataTemplate:
                 #print("ListElement::outer")
                 for outer_val in outer_vals:
                     inner_list_elem = ListElement.from_dict(node.template.to_dict())
-                    print("ListElement::outer::val", outer_val)
+                    #print(" ListElement::outer::val", outer_val)
                     inner_vals = inner_list_elem.to_value(db_connector, outer_val)
-                    print("ListElement::outer::val", outer_val, inner_vals)
+                    #print(" ListElement::inner::val", inner_vals)
                     for inner_val in inner_vals:
-                        print("\n"*10, outer_val, inner_val)
+                        #print(" ", outer_val, inner_val)
                         # Pass tuple (outer, inner) to the innermost template (inner_list_elem.template)
-                        filled = self._fill_recursive(inner_list_elem.template, db_connector, (outer_val, inner_val))
+                        filled = self._fill_recursive(inner_list_elem.template, db_connector, (ind, outer_val, inner_val))
                         if filled is not None:
                             results.append(filled)
+                        #print("---")
+                        #print(filled)
+                        #print("---")
             else:
                 #print("ListElement::inner")
                 # Original behaviour: template is not a ListElement
                 for val in outer_vals:
                     #print("ListElement::inner::val", val)
-                    filled = self._fill_recursive(node.template, db_connector, val)
+                    filled = self._fill_recursive(node.template, db_connector, (ind, val))
                     if filled is not None:
                         results.append(filled)
             # Apply optional after (if any) to each result
@@ -819,7 +832,7 @@ class DataTemplate:
                                     template={
                                     "_debug_parent": DataTemplateElement(
                                         example="605795c6-4a22-4633-9a65-c3d8ec882c30",
-                                        tuple_index=0,
+                                        tuple_index=1,
                                         howto=[
                                             DataTemplateHowToElement(column_name="ParentNumber", table_name="SearchAttributes",
                                                                      condition_column="ParentNumber"),
@@ -827,13 +840,13 @@ class DataTemplate:
                                     ).to_dict(),
                                     "status": DataTemplateElement(
                                         example="1",
-                                        tuple_index=1,
+                                        tuple_index=2,
                                         howto=[],
-                                        after=f"config.loaded_config.status_mapping.get(str(x), 'ERROR' + str(x))",
+                                        after=f"str(x)",
                                     ).to_dict(),
                                     "statusDate": DataTemplateElement(
                                         example="2025-12-12T10:32:23.042643",
-                                        tuple_index=0,
+                                        tuple_index=1,
                                         howto=[
                                             DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
                                                                      condition_column="ParentNumber",
@@ -842,22 +855,22 @@ class DataTemplate:
                                         after="'-'.join(reversed(str(x).split('.'))) + 'T00:00:00.000000'",
                                     ).to_dict(),
                                     "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
+                                    "attachments": {
+                                        "attachment": FileElement(
+                                            tuple_index=0,
+                                            howto=[
+                                                # Повторить цепочку как в ListElement для statusHistory, но без вложенного ListElement
+                                                DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                                DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
+                                                                         condition_column="Number"),
+                                                DataTemplateHowToElement(column_name="Number", table_name="Objects",
+                                                                         condition_column="ParentNumber", multiple=True,
+                                                                         clause_after_when='AND ("Kind" = \'150002\' OR "Kind" = \'150003\')'),
+                                            ],
+                                        ).to_dict(),
+                                    },
                                     },
                                 ).to_dict()
-                            ).to_dict(),
-                        },
-                        "attachments": {
-                            "attachment": FileElement(
-                                howto=[
-                                    # Повторить цепочку как в ListElement для statusHistory, но без вложенного ListElement
-                                    DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
-                                    DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
-                                                             condition_column="Number"),
-                                    DataTemplateHowToElement(column_name="Number", table_name="Objects",
-                                                             condition_column="ParentNumber", multiple=True,
-                                                             clause_after_when='AND "Kind" = \'150002\''),
-                                ],
-                                after=None,   # при необходимости можно постобработать каждый словарь
                             ).to_dict(),
                         },
                     }]
@@ -899,7 +912,7 @@ class DataTemplate:
                                     template={
                                     "_debug_parent": DataTemplateElement(
                                         example="605795c6-4a22-4633-9a65-c3d8ec882c30",
-                                        tuple_index=0,
+                                        tuple_index=1,
                                         howto=[
                                             DataTemplateHowToElement(column_name="ParentNumber", table_name="SearchAttributes",
                                                                      condition_column="ParentNumber"),
@@ -907,13 +920,13 @@ class DataTemplate:
                                     ).to_dict(),
                                     "status": DataTemplateElement(
                                         example="1",
-                                        tuple_index=1,
+                                        tuple_index=2,
                                         howto=[],
-                                        after=f"config.loaded_config.status_mapping.get(str(x), 'ERROR' + str(x))",
+                                        after=f"str(x)",
                                     ).to_dict(),
                                     "statusDate": DataTemplateElement(
                                         example="2025-12-12T10:32:23.042643",
-                                        tuple_index=0,
+                                        tuple_index=1,
                                         howto=[
                                             DataTemplateHowToElement(column_name="TextValue", table_name="SearchAttributes",
                                                                      condition_column="ParentNumber",
@@ -922,23 +935,23 @@ class DataTemplate:
                                         after="'-'.join(reversed(str(x).split('.'))) + 'T00:00:00.000000'",
                                     ).to_dict(),
                                     "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
+                                    "attachments": {
+                                        "attachment": FileElement(
+                                            tuple_index=0,
+                                            howto=[
+                                                # Повторить цепочку как в ListElement для statusHistory, но без вложенного ListElement
+                                                DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                                DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
+                                                                         condition_column="Number"),
+                                                DataTemplateHowToElement(column_name="Number", table_name="Objects",
+                                                                         condition_column="ParentNumber", multiple=True,
+                                                                         clause_after_when='AND ("Kind" = \'150002\' OR "Kind" = \'150003\')'),
+                                            ],
+                                        ).to_dict(),
+                                    },
                                     },
                                 ).to_dict()
                             ).to_dict()
-                        },
-                        "attachments": {
-                            "attachment": FileElement(
-                                howto=[
-                                    # Повторить цепочку как в ListElement для statusHistory, но без вложенного ListElement
-                                    DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
-                                    DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
-                                                             condition_column="Number"),
-                                    DataTemplateHowToElement(column_name="Number", table_name="Objects",
-                                                             condition_column="ParentNumber", multiple=True,
-                                                             clause_after_when='AND ("Kind" = \'150002\' OR "Kind" = \'150003\')'),
-                                ],
-                                after=None,   # при необходимости можно постобработать каждый словарь
-                            ).to_dict(),
                         },
                     }]
                 }

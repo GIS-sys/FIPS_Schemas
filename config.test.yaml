@@ -20,8 +20,10 @@ db_adapter_dbname: smev_adapter_single
 db_adapter_user: egorov
 db_adapter_password: TODO
 
-sleep_interval: 10
-monitor_starting_date: 2025-12-31
+api_files_url: "http://10.2.53.15:4300"
+
+sleep_interval: 120
+monitor_starting_date: 2026-06-01
 status_mapping:
   "001": [7]
   "002": [222]

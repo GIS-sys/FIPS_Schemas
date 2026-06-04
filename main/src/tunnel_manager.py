@@ -181,6 +181,7 @@ class SingleThreadedTunnelManager:
 
     @contextmanager
     def adapter_db_connection(self):
+        logger.log("INFO: DB adapter tunnel connection initiated", force_print=True)
         conn = self.get_db_adapter_connection()
         try:
             yield conn
@@ -248,6 +249,7 @@ class SingleThreadedTunnelManager:
     @contextmanager
     def db_appl_connection(self):
         """Context manager for second database connections"""
+        logger.log("INFO: DB appl tunnel connection initiated", force_print=True)
         conn = self.get_db_appl_connection()
         try:
             yield conn
