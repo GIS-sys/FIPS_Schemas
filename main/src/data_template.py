@@ -535,8 +535,6 @@ class DataTemplate:
         elif isinstance(node, FileElement):
             # Вычисляем значение (список словарей)
             result = node.to_value(db_connector, ind)
-            print("\n"*10+"!!!!!")
-            print(result, ind)
             return self._fill_recursive(result, db_connector, ind)
 
         else:
