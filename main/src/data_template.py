@@ -211,7 +211,7 @@ class FileElement:
         if self.after is not None:
             try:
                 foo = eval(f"lambda x: ({self.after})")
-                all_files = [foo(f) for f in all_files]
+                all_files = foo(all_files)
             except Exception as e:
                 raise Exception(f"FileElement after transformation failed: {e}")
 
@@ -535,6 +535,8 @@ class DataTemplate:
         elif isinstance(node, FileElement):
             # Вычисляем значение (список словарей)
             result = node.to_value(db_connector, ind)
+            print("\n"*10+"!!!!!")
+            print(result, ind)
             return self._fill_recursive(result, db_connector, ind)
 
         else:
@@ -855,20 +857,19 @@ class DataTemplate:
                                         after="'-'.join(reversed(str(x).split('.'))) + 'T00:00:00.000000'",
                                     ).to_dict(),
                                     "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
-                                    "attachments": {
-                                        "attachment": FileElement(
-                                            tuple_index=0,
-                                            howto=[
-                                                # Повторить цепочку как в ListElement для statusHistory, но без вложенного ListElement
-                                                DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
-                                                DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
-                                                                         condition_column="Number"),
-                                                DataTemplateHowToElement(column_name="Number", table_name="Objects",
-                                                                         condition_column="ParentNumber", multiple=True,
-                                                                         clause_after_when='AND ("Kind" = \'150002\' OR "Kind" = \'150003\')'),
-                                            ],
-                                        ).to_dict(),
-                                    },
+                                    "attachments": FileElement(
+                                        tuple_index=0,
+                                        howto=[
+                                            # Повторить цепочку как в ListElement для statusHistory, но без вложенного ListElement
+                                            DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                            DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
+                                                                     condition_column="Number"),
+                                            DataTemplateHowToElement(column_name="Number", table_name="Objects",
+                                                                     condition_column="ParentNumber", multiple=True,
+                                                                     clause_after_when='AND ("Kind" = \'150002\' OR "Kind" = \'150003\')'),
+                                        ],
+                                        after="{'attachment': x} if x else None",
+                                    ).to_dict(),
                                     },
                                 ).to_dict()
                             ).to_dict(),
@@ -935,20 +936,19 @@ class DataTemplate:
                                         after="'-'.join(reversed(str(x).split('.'))) + 'T00:00:00.000000'",
                                     ).to_dict(),
                                     "MessageType": "<#if text?hasContent>Направлена исходящая корреспонденция по форме SearchAttributes.OCCode ${(text)!}</#if>",
-                                    "attachments": {
-                                        "attachment": FileElement(
-                                            tuple_index=0,
-                                            howto=[
-                                                # Повторить цепочку как в ListElement для statusHistory, но без вложенного ListElement
-                                                DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
-                                                DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
-                                                                         condition_column="Number"),
-                                                DataTemplateHowToElement(column_name="Number", table_name="Objects",
-                                                                         condition_column="ParentNumber", multiple=True,
-                                                                         clause_after_when='AND ("Kind" = \'150002\' OR "Kind" = \'150003\')'),
-                                            ],
-                                        ).to_dict(),
-                                    },
+                                    "attachments": FileElement(
+                                        tuple_index=0,
+                                        howto=[
+                                            # Повторить цепочку как в ListElement для statusHistory, но без вложенного ListElement
+                                            DataTemplateHowToElement(column_name="object_uid", table_name="fips_rutrademark"),
+                                            DataTemplateHowToElement(column_name="ParentNumber", table_name="Objects",
+                                                                     condition_column="Number"),
+                                            DataTemplateHowToElement(column_name="Number", table_name="Objects",
+                                                                     condition_column="ParentNumber", multiple=True,
+                                                                     clause_after_when='AND ("Kind" = \'150002\' OR "Kind" = \'150003\')'),
+                                        ],
+                                        after="{'attachment': x} if x else None",
+                                    ).to_dict(),
                                     },
                                 ).to_dict()
                             ).to_dict()
