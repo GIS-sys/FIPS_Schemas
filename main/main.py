@@ -215,29 +215,31 @@ def main():
                             raise Exception("Invalid structure: order list missing")
                         order = order_list[0]
                         # Replace with a single-element list
-                        status_dict = None
+                        status_dicts = []
                         for specific_history in order["statusHistoryList"]["statusHistory"]:
                             if specific_history["_debug_parent"] == parent:
                                 status_dict = copy.deepcopy(specific_history)
                                 status_dict.pop("_debug_parent")
-                                break
-                        if status_dict is None:
+                                status_dicts.append(status_dict)
+                        if not status_dicts:
                             raise Exception(f"No status history entry with _debug_parent={parent} found!")
-                        order["statusHistoryList"]["statusHistory"] = [status_dict]
-                        status_date = status_dict.get("statusDate")
+                        order["statusHistoryList"]["statusHistory"] = status_dicts
+                        status_date = status_dicts[0].get("statusDate")
                     except KeyError as e:
                         raise Exception(f"Could not locate statusHistoryList: {e}")
 
                     # For Update mode, apply sequential timestamp suffix
                     if not is_create_mode:
-                        seq = tracker.increment_update_seq(uid)
-                        # status_date is like "2026-04-16T12:00:00.000000"
-                        # Replace the last 6 digits with zero-padded seq
-                        if status_date and len(status_date) >= 20 and "." in status_date:
-                            base = status_date[:status_date.rindex(".")+1]
-                            new_status_date = f"{base}{seq:06d}"
-                            status_dict["statusDate"] = new_status_date
-                            status_date = new_status_date
+                        for status_dict in status_dicts:
+                            seq = tracker.increment_update_seq(uid)
+                            # status_date is like "2026-04-16T12:00:00.000000"
+                            # Replace the last 6 digits with zero-padded seq
+                            status_date = status_dict.get("statusDate")
+                            if status_date and len(status_date) >= 20 and "." in status_date:
+                                base = status_date[:status_date.rindex(".")+1]
+                                new_status_date = f"{base}{seq:06d}"
+                                status_dict["statusDate"] = new_status_date
+                        status_date = status_dicts[0].get("statusDate")
 
                     # Convert to XML
                     xml_data = xml_gen.json_to_xml(cloned_data)

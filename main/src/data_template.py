@@ -70,21 +70,17 @@ class DataTemplateHowToElement:
         """
         data = db_connector.fetchall(req)
         logger.log("Debug", "to_value\n", data, "\n", req)
-        #print("HowTo::to_value", data)
 
         if self.multiple:
-            #print("HowTo::to_value::multiple", data)
             # Return a list of first column values, applying `after` to each if present
             if not data:
                 values = []
             else:
                 values = [(row[0] if row is not None else None) for row in data]
-            #print("HowTo::to_value::multiple", data, values)
             if self.after is not None:
                 try:
                     foo = eval(f"lambda x: ({self.after})")
                     values = [foo(v) for v in values]
-                    #print("HowTo::to_value::multiple::after", values)
                 except Exception:
                     raise Exception(f"Elements in {values} could not be formatted using after={self.after}")
             return values
@@ -94,12 +90,10 @@ class DataTemplateHowToElement:
                 val = None
             else:
                 val = data[0][0]
-            #print("HowTo::to_value::single", data, val)
             if self.after is not None:
                 try:
                     foo = eval(f"lambda x: ({self.after})")
                     val = foo(val)
-                    #print("HowTo::to_value::single::after", val)
                 except Exception:
                     raise Exception(f"{val} could not be formatted using after={self.after}")
             return val
@@ -163,6 +157,7 @@ class FileElement:
                     if resp.status_code != 200:
                         raise Exception(f"HTTP {resp.status_code}: {resp.text[:200]}")
                     file_metadata = resp.json()  # ожидается список
+                    logger.log(str(file_metadata))
 
                 for file_info in file_metadata:
                     file_number = file_info.get('number')
@@ -411,7 +406,6 @@ class ListElement:
         for howto_el in self.howto:
             val = howto_el.to_value(db_connector, last)
             last = val
-        #print("ListElement::to_value::end", ind, last, len(self.howto))
         # last must be a list
         if not isinstance(last, list):
             raise Exception(f"ListElement expected a list from howto, got {type(last)}")
@@ -498,31 +492,21 @@ class DataTemplate:
             return self._fill_recursive(result, db_connector, ind)
 
         elif isinstance(node, ListElement):
-            #print("ListElement")
             outer_vals = node.to_value(db_connector, ind)   # list from node.howto
             results = []
             # If the template is another ListElement → nested flattening
             if isinstance(node.template, ListElement):
-                #print("ListElement::outer")
                 for outer_val in outer_vals:
                     inner_list_elem = ListElement.from_dict(node.template.to_dict())
-                    #print(" ListElement::outer::val", outer_val)
                     inner_vals = inner_list_elem.to_value(db_connector, outer_val)
-                    #print(" ListElement::inner::val", inner_vals)
                     for inner_val in inner_vals:
-                        #print(" ", outer_val, inner_val)
                         # Pass tuple (outer, inner) to the innermost template (inner_list_elem.template)
                         filled = self._fill_recursive(inner_list_elem.template, db_connector, (ind, outer_val, inner_val))
                         if filled is not None:
                             results.append(filled)
-                        #print("---")
-                        #print(filled)
-                        #print("---")
             else:
-                #print("ListElement::inner")
                 # Original behaviour: template is not a ListElement
                 for val in outer_vals:
-                    #print("ListElement::inner::val", val)
                     filled = self._fill_recursive(node.template, db_connector, (ind, val))
                     if filled is not None:
                         results.append(filled)
